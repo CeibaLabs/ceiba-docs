@@ -26,11 +26,11 @@ The docs should help a developer answer these questions quickly:
 - How do plans, quotas, and usage enforcement behave?
 - How do I go from trial to production?
 
-## Key message
+<!-- ## Key message
 
 Ceiba is not trying to be a full gateway or broad API management suite.
 
-It is a **Node-first API productization layer** for existing APIs.
+It is a **Node-first API productization layer** for existing APIs. -->
 
 <!-- ## Suggested docs structure
 
