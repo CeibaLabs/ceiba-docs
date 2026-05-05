@@ -32,7 +32,7 @@ Ceiba is not trying to be a full gateway or broad API management suite.
 
 It is a **Node-first API productization layer** for existing APIs.
 
-## Suggested docs structure
+<!-- ## Suggested docs structure
 
 - `/getting-started`
 - `/quickstart/express`
@@ -45,7 +45,7 @@ It is a **Node-first API productization layer** for existing APIs.
 - `/comparisons/gateway-vs-ceiba`
 - `/reference/sdk`
 - `/reference/runtime`
-- `/guides/stripe-backed-access`
+- `/guides/stripe-backed-access` -->
 
 ## Site
 
