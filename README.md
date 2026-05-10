@@ -47,6 +47,10 @@ It is a **Node-first API productization layer** for existing APIs. -->
 - `/reference/runtime`
 - `/guides/stripe-backed-access` -->
 
+## Quickstart (source)
+
+- [Local Runtime + Node SDK](docs/quickstart.md) — current working integration path without Control Plane CRUD.
+
 ## Site
 
 https://useceiba.com
