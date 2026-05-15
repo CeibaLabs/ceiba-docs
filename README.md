@@ -50,6 +50,7 @@ It is a **Node-first API productization layer** for existing APIs. -->
 ## Quickstart (source)
 
 - [Local Runtime + Node SDK](docs/quickstart.md) — current working integration path without Control Plane CRUD.
+- [Programmatic API keys (Runtime + SDK)](docs/programmatic-api-keys.md) — create, list, read, expiry, revoke, and archive keys using the project secret (no Control Plane UI).
 
 ## Site
 

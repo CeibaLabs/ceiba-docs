@@ -14,6 +14,12 @@
 - Explicitly notes that local infrastructure/bootstrap details are still internal while Control Plane flows evolve.
 - Branch: `docs/docs-quickstart`.
 
+## 2026-05-14 — Programmatic key workflows (docs-only)
+
+- Added **`docs/programmatic-api-keys.md`**: machine-facing Runtime routes + **`CeibaRuntimeClient`** methods; auth header; read vs create semantics; common HTTP errors; explicit exclusions (no Control Plane bootstrap, no authorize deep dive).
+- Linked from **`README.md`** and cross-linked from **`docs/quickstart.md`** (end of “What is still evolving”).
+- Branch: **`docs/programmatic-key-workflows`**.
+
 ## Next
 
 - Wire content into the public docs site when the site generator and navigation exist; keep markdown source as the contract until then.

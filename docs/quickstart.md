@@ -156,4 +156,6 @@ Still evolving:
 - public examples that mirror the quickstart
 - fuller docs-site navigation and onboarding layers
 
+For **programmatic** key lifecycle (create, list, read, expiry, revoke, archive) from your backend using the project secret, see **[Programmatic API keys](programmatic-api-keys.md)**.
+
 That is intentional. The goal is to document the path that is already real, not to promise operator workflows that are still internal.
