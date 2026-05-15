@@ -18,7 +18,7 @@
 
 - Added **`docs/programmatic-api-keys.md`**: machine-facing Runtime routes + **`CeibaRuntimeClient`** methods; auth header; read vs create semantics; common HTTP errors; explicit exclusions (no Control Plane bootstrap, no authorize deep dive).
 - Linked from **`README.md`** and cross-linked from **`docs/quickstart.md`** (end of “What is still evolving”).
-- Branch: **`docs/programmatic-key-workflows`**.
+- Branch: **`docs/programmatic-key-workflows`**; **Repo:** feature **`dc7628f`** (merge to **`dev`** pending review).
 
 ## Next
 
