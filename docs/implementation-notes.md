@@ -20,6 +20,10 @@
 - Linked from **`README.md`** and cross-linked from **`docs/quickstart.md`** (end of “What is still evolving”).
 - Branch: **`docs/programmatic-key-workflows`**; **Repo:** feature **`dc7628f`** (merge to **`dev`** pending review).
 
+## Launch validation (2026-05-19, read-only)
+
+- **`dev`** at **`5aa80c5`**: `docs/programmatic-api-keys.md` and quickstart claims match landed Runtime + SDK behavior; no launch-blocking findings.
+
 ## Next
 
 - Wire content into the public docs site when the site generator and navigation exist; keep markdown source as the contract until then.
