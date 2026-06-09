@@ -24,6 +24,16 @@
 
 - **`dev`** at **`5aa80c5`**: `docs/programmatic-api-keys.md` and quickstart claims match landed Runtime + SDK behavior; no launch-blocking findings.
 
+## 2026-06-08 — Docs-site UI / information architecture (`feat/docs-site-ui`)
+
+- Added **`docs/index.md`** as the docs-site home source: choose-your-path table, shipped MVP surface summary, examples pointers, and explicit scope guardrails.
+- Added **`docs/project-secret-rotation.md`** for **`x-ceiba-project-secret`**, current vs previous secret behavior, fixed **24-hour** overlap, second-rotation single-slot behavior, and operator/integrator responsibilities.
+- Added **`docs/control-plane-operator-guide.md`** for shipped MVP workflows only: Clerk auth, owner-scoped projects, project context, project create/secret rotation, API key lifecycle, policies, subscriptions, Stripe Checkout/webhook/reconcile backbone, and read-only usage.
+- Reworked **`README.md`** into a docs-site entry map for **`docs.useceiba.com`**.
+- Tightened **`docs/quickstart.md`** and **`docs/programmatic-api-keys.md`** with clearer request-protection vs operator vs machine-facing paths, current Control Plane cross-links, Fastify/Express examples references, and project-secret rotation links.
+- Used parked **`feat/docs-mvp-expansion`** at **`3848428`** as reference input only; content was adapted to current Clerk auth and owner-scoped project behavior rather than merged wholesale.
+- Out of scope: docs app generator, examples refresh, product code, schema/migrations, Stripe configuration, billing seed/backfill, gateway/x402/MCP/OAuth/JWT provider expansion, orgs/roles/RBAC, or public pricing/plan claims.
+
 ## Next
 
-- Wire content into the public docs site when the site generator and navigation exist; keep markdown source as the contract until then.
+- Review/merge the docs-site UI branch, then return to an explicit approval gate before examples refresh, billing plan-catalog seed/backfill, or live-stack smoke.

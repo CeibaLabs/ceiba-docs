@@ -1,53 +1,56 @@
-# Quickstart: Protect a Node Route with Ceiba
+# Quickstart: Protect A Node Route With Ceiba
 
-This guide describes the **current real integration shape** for Ceiba:
+This guide is the **request protection path**: configure the SDK, call Runtime `authorize` on each protected route, and let Runtime return allow/deny decisions.
 
-- **Runtime enforces**
-- **SDK adapts**
-- **your existing Node API keeps its own route handlers**
+It matches the shipped `@ceibalabs/ceiba-sdk` and Runtime behavior for Express and Fastify.
 
-Ceiba is currently best understood as a **Runtime + SDK path** for an existing Express or Fastify API. Public Control Plane flows are still evolving, so this quickstart stays focused on the working request path and does not promise dashboard setup that does not exist yet.
+## When To Use This Guide
 
-## What this guide covers
+| Path | Use This When |
+|------|---------------|
+| **Request protection** | You have an Express or Fastify API and need Ceiba to gate live HTTP requests. |
+| **[Control Plane operator guide](control-plane-operator-guide.md)** | A human operator needs to create projects, rotate secrets, manage keys/policies, select plans, or read usage. |
+| **[Programmatic API keys](programmatic-api-keys.md)** | Your backend needs to mint or retire API keys through Runtime + SDK. |
+| **[Project secret and rotation overlap](project-secret-rotation.md)** | You need to rotate or roll out `x-ceiba-project-secret`. |
 
-This guide shows the integration shape for:
+Runnable proofs live in `ceiba-examples`:
 
-1. configuring the SDK with a Runtime base URL, project ID, and project secret
-2. protecting an Express route with `@ceibalabs/ceiba-sdk`
-3. understanding the current denial and transport behavior
+- `express-proof/`
+- `fastify-proof/`
 
-## What this guide does not cover
+## What This Guide Covers
 
-The following are intentionally **not** part of this public quickstart yet:
+1. Configuring the SDK with Runtime base URL, project ID, and project secret.
+2. Protecting an Express route with `ceibaExpressMiddleware`.
+3. Protecting a Fastify route with `ceibaFastifyPreHandler`.
+4. Understanding current denial and transport behavior.
 
-- local Postgres or Redis bring-up
-- direct Runtime repo bootstrap
-- raw SQL seed data
-- Prisma or table-level setup steps
-- Control Plane CRUD flows for projects, keys, or policies
+## What This Guide Does Not Cover
 
-Those local infrastructure and bootstrap details are currently internal/developer setup while the productized Control Plane path is still evolving.
+- Control Plane operator workflows. See [Control Plane operator guide](control-plane-operator-guide.md).
+- Machine-facing key create/list/revoke APIs. See [Programmatic API keys](programmatic-api-keys.md).
+- Project secret rotation semantics. See [Project secret and rotation overlap](project-secret-rotation.md).
+- Local Runtime bootstrap, Postgres, Redis, migrations, or seed data.
+- Public pricing/plan catalog values.
 
-## What you need
+## What You Need
 
-You should already have:
+- an existing Node API using Express or Fastify
+- a running Ceiba Runtime base URL
+- a project UUID
+- a project secret from Control Plane project create or rotation
+- an API key that belongs to the project
+- an active access policy matching the route you protect
 
-- an existing Node API
-- Express or Fastify
-- access to a running Ceiba Runtime environment
-- a valid Ceiba project ID
-- a valid Ceiba project secret
-- an API key that belongs to a project and policy already configured for that Runtime
+The SDK sends the project secret as `x-ceiba-project-secret` on authorize calls. Runtime uses it to authenticate the project before checking the end-customer API key.
 
-## Install the SDK
+## Install The SDK
 
 ```bash
 npm install @ceibalabs/ceiba-sdk
 ```
 
-If you are using Express, also install Express in your app.
-
-## Configure the Runtime client
+## Configure The Runtime Client
 
 ```ts
 import { CeibaRuntimeClient, parseCeibaSdkConfig } from "@ceibalabs/ceiba-sdk";
@@ -61,22 +64,18 @@ const config = parseCeibaSdkConfig({
 const client = new CeibaRuntimeClient(config);
 ```
 
-The SDK sends:
-
-- the request details in the authorize body
-- the project secret as Runtime transport auth
-
 Runtime remains the source of truth for:
 
-- project auth
+- project secret auth
 - API key validation
 - policy matching
 - subscription gating
-- rate limits
-- quota checks
+- rate limits and quotas
 - usage recording
 
-## Protect an Express route
+The SDK adapts your framework to Runtime. It does not re-implement enforcement rules.
+
+## Protect An Express Route
 
 ```ts
 import express from "express";
@@ -104,58 +103,77 @@ app.get(
 );
 ```
 
-After an allow decision, the SDK attaches normalized request context to the request.
+After an allow decision, the SDK attaches normalized access context to `req.ceibaAccess`.
 
-## Fastify usage
+## Protect A Fastify Route
 
-For Fastify, use the exported route-level pre-handler:
+Use the exported route-level pre-handler:
 
-- `ceibaFastifyPreHandler`
+```ts
+import Fastify from "fastify";
+import {
+  CeibaRuntimeClient,
+  ceibaFastifyPreHandler,
+  parseCeibaSdkConfig,
+} from "@ceibalabs/ceiba-sdk";
 
-The intended shape is the same:
+const config = parseCeibaSdkConfig({
+  runtimeBaseUrl: process.env.CEIBA_RUNTIME_URL!,
+  projectId: process.env.CEIBA_PROJECT_ID!,
+  projectSecret: process.env.CEIBA_PROJECT_SECRET!,
+});
 
-- SDK extracts request credentials
-- SDK calls Runtime
-- Runtime returns allow or deny
-- SDK attaches normalized access context only on allow
+const client = new CeibaRuntimeClient(config);
+const app = Fastify();
 
-## Current denial behavior
+app.get(
+  "/v1/hello",
+  {
+    preHandler: ceibaFastifyPreHandler({
+      client,
+      projectId: config.projectId,
+    }),
+  },
+  async (request) => {
+    return { ok: true, ceibaAccess: request.ceibaAccess };
+  },
+);
+```
 
-The SDK maps the current Runtime denial set to stable HTTP behavior without re-implementing Runtime rules.
+After an allow decision, the SDK attaches normalized access context to `request.ceibaAccess`.
+
+## Current Denial Behavior
+
+The SDK maps Runtime denials to stable HTTP behavior:
 
 | `denialReason` | HTTP | `error` |
-|---|---:|---|
+|----------------|-----:|---------|
 | `missing_api_key`, `invalid_api_key`, `revoked_api_key`, `archived_api_key`, `expired_api_key` | 401 | `ceiba_unauthorized` |
 | `policy_no_match`, `inactive_subscription` | 403 | `ceiba_forbidden` |
 | `quota_exceeded` | 429 | `ceiba_quota_exceeded` |
 | `rate_limited` | 429 | `ceiba_rate_limited` |
 
-## Current transport behavior
+## Current Transport Behavior
 
-Some failures are **not** customer access denials. For example:
+Some failures are not end-customer access denials:
 
-- invalid project secret
+- missing or invalid project secret
 - malformed authorize input
 - Runtime infrastructure failures
 
-In those cases, the SDK returns a transport-style error rather than a customer-facing denial. Direct `CeibaRuntimeClient` users can also use:
+The SDK surfaces these as transport-style failures. Direct `CeibaRuntimeClient` users can use:
 
 - `httpStatusForDenial`
 - `ceibaErrorCodeForDenial`
 - `httpStatusForRuntimeTransport`
 
-These exports are intended to keep host-app behavior consistent without moving enforcement into the SDK.
+These helpers keep host-app responses consistent without moving enforcement into the SDK.
 
-## What is still evolving
+## Next Steps
 
-Today, the public quickstart stops at the real Runtime + SDK request path.
-
-Still evolving:
-
-- productized Control Plane flows
-- public examples that mirror the quickstart
-- fuller docs-site navigation and onboarding layers
-
-For **programmatic** key lifecycle (create, list, read, expiry, revoke, archive) from your backend using the project secret, see **[Programmatic API keys](programmatic-api-keys.md)**.
-
-That is intentional. The goal is to document the path that is already real, not to promise operator workflows that are still internal.
+| Topic | Doc |
+|-------|-----|
+| Operator project/key/policy/billing setup | [Control Plane operator guide](control-plane-operator-guide.md) |
+| Secret rotation and 24-hour overlap | [Project secret and rotation overlap](project-secret-rotation.md) |
+| Backend-driven key lifecycle | [Programmatic API keys](programmatic-api-keys.md) |
+| Docs-site overview | [Docs home](index.md) |
