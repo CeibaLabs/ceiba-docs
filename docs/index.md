@@ -1,59 +1,69 @@
-# Ceiba Docs Home
+# Ceiba Documentation
 
-Ceiba is a focused MVP for productizing an existing Node API with Runtime-backed access decisions, a thin Node SDK, and an operator Control Plane.
+Ceiba helps teams productize an existing Node API with API keys, policies, plans, quotas, usage tracking, and subscription-gated access without adopting a full gateway.
 
-This docs home is the intended entry point for **docs.useceiba.com**. It is optimized for the three paths people need first: protect requests, operate the project, and manage machine-facing credentials safely.
-
----
+These guides cover the shipped MVP: connect an Express or Fastify API, configure access in the Control Plane, and manage credentials safely from either the console or your backend.
 
 ## Choose Your Path
 
-| Path | Start Here | You Will Learn |
-|------|------------|----------------|
-| **Request protection** | [Quickstart](quickstart.md) | Configure the SDK, protect Express/Fastify routes, and understand Runtime allow/deny behavior. |
-| **Operator setup** | [Control Plane operator guide](control-plane-operator-guide.md) | Sign in with Clerk, create projects, rotate secrets, manage keys/policies, select plans, and read usage. |
-| **Machine-facing lifecycle** | [Programmatic API keys](programmatic-api-keys.md) | Create, list, read, expire, revoke, and archive API keys from your backend using Runtime + SDK. |
-| **Secret rotation** | [Project secret and rotation overlap](project-secret-rotation.md) | Use `x-ceiba-project-secret`, rotate safely, and plan around the 24-hour overlap window. |
+| Goal | Start here |
+|------|------------|
+| Protect an Express or Fastify route | [Quickstart](/quickstart) |
+| Set up and operate a project | [Control Plane Operator Guide](/control-plane-operator-guide) |
+| Create and retire keys from your backend | [Programmatic API Keys](/programmatic-api-keys) |
+| Rotate a project secret safely | [Project Secret Rotation](/project-secret-rotation) |
 
----
+## How Ceiba Fits Together
 
-## Shipped MVP Surface
+| Surface | Responsibility |
+|---------|----------------|
+| **Control Plane** | Clerk-authenticated console for owner-scoped projects, API keys, access policies, subscriptions, and usage. |
+| **Runtime** | Makes request-time access decisions, enforces project and credential state, applies policies and limits, and records usage. |
+| **Node SDK** | Thin Express and Fastify integration that calls Runtime and attaches normalized access context after an allow decision. |
+| **Core Domain** | Shared internal contract package. It is not a running service. |
 
-### Runtime Enforcement
+Runtime owns enforcement. The SDK adapts your Node framework to Runtime; it does not reproduce policy, key, subscription, quota, or rate-limit rules inside your application.
 
-Runtime owns the hot path. It validates the project secret, checks end-customer API keys, applies active policies, evaluates subscription/limit state, returns allow or deny decisions, and records usage.
+## Shipped MVP Workflows
 
-### SDK-First Integration
+### Request Protection
 
-The Node SDK keeps host apps thin. Express uses `ceibaExpressMiddleware`; Fastify uses `ceibaFastifyPreHandler`. Both call Runtime instead of re-implementing enforcement rules in the application.
+Configure three server-side values, install `@ceibalabs/ceiba-sdk`, and add the shipped Express middleware or Fastify pre-handler to a route. Runtime returns the access decision and the SDK maps it to stable HTTP behavior.
 
-### Control Plane Workflows
+### Operator Setup
 
-The Control Plane is an operator console protected by Clerk. Operators create owned projects, copy one-time project secrets, rotate secrets, manage API keys and policies, select plans, start Checkout when Stripe is configured, sync subscriptions from Stripe, and read usage.
+Sign in through Clerk, create an owned project, copy its one-time project secret, create downstream API keys, define access policies, review the current plan, and inspect monthly usage and recent activity.
 
-### Billing Backbone
+### Credentials
 
-The MVP has subscription-linked access state, Stripe Checkout session creation when configured, webhook intake, and operator reconciliation. The docs do not publish Free/Starter/Pro values or plan claims that depend on a future billing plan-catalog seed/backfill.
+Project secrets and downstream API keys are separate:
 
-### Examples
+- A **project secret** authenticates your backend or SDK to Runtime.
+- An **API key** authenticates a downstream caller to your API.
+- Project-secret plaintext is shown once during project creation or rotation.
+- API-key plaintext is shown once during key creation.
+- Ceiba stores hashes, not retrievable plaintext credentials.
 
-`ceiba-examples` includes:
+Project-secret rotation includes one previous-secret slot with a fixed 24-hour overlap. A second rotation replaces that slot.
 
-- `express-proof/`
-- `fastify-proof/`
-- `express-proof/scripts/programmatic-keys.mjs`
+### Plans And Billing
 
-These examples demonstrate the shipped SDK integration shape. This repo links to them but does not edit them.
+Free, Starter, and Pro exist as the MVP plan catalog. The Control Plane shows each plan's current request limits without publishing prices here.
 
----
+Eligible projects can start an initial paid subscription through Stripe Checkout. A project with an existing Stripe subscription cannot start another Checkout from the plan dialog, and paid-plan upgrade or downgrade behavior is not currently shipped.
 
-## What Ceiba Is Not In The MVP
+Stripe webhook delivery is the primary subscription synchronization path, with an authenticated Checkout-return fallback. After successful Checkout synchronization, Ceiba sends its own subscription confirmation email.
 
-Ceiba is not a full API gateway, customer portal, team/org admin platform, enterprise SSO product, x402 surface, or MCP docs server. Those topics are intentionally outside the current docs.
+## Runnable Examples
 
-## Recommended Reading Order
+- [Express proof](https://github.com/CeibaLabs/ceiba-examples/tree/dev/express-proof) uses `ceibaExpressMiddleware`.
+- [Fastify proof](https://github.com/CeibaLabs/ceiba-examples/tree/dev/fastify-proof) uses `ceibaFastifyPreHandler`.
+- [Programmatic key lifecycle script](https://github.com/CeibaLabs/ceiba-examples/blob/dev/express-proof/scripts/programmatic-keys.mjs) covers create, read, list, expiry set/clear, revoke, and archive.
 
-1. [Quickstart](quickstart.md)
-2. [Control Plane operator guide](control-plane-operator-guide.md)
-3. [Project secret and rotation overlap](project-secret-rotation.md)
-4. [Programmatic API keys](programmatic-api-keys.md)
+The public [Node SDK repository](https://github.com/CeibaLabs/ceiba-sdk) contains the package source.
+
+## MVP Boundaries
+
+The current product does not include gateway mode, x402, an MCP docs server, OAuth/JWT access providers, teams or organizations, RBAC, enterprise SSO, a customer portal, usage-based billing, advanced analytics, or multi-language SDKs.
+
+Continue with the [Quickstart](/quickstart) to protect your first route.

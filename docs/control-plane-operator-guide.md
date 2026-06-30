@@ -1,66 +1,47 @@
 # Control Plane Operator Guide
 
-This guide documents what the shipped Ceiba Control Plane supports today for human operators.
+Use the Ceiba Control Plane to configure projects, downstream API keys, access policies, subscriptions, and usage. Runtime reads and enforces that configuration when your Node API asks for an access decision.
 
-The Control Plane configures state in Postgres. Runtime enforces that state on live requests. For integration code, see the [Quickstart](quickstart.md). For backend-driven key lifecycle, see [Programmatic API keys](programmatic-api-keys.md). For secret semantics, see [Project secret and rotation overlap](project-secret-rotation.md).
+[Open the Control Plane](https://app.useceiba.com) or continue below for the shipped workflows.
 
----
+## Sign In And Create An Account
 
-## What Control Plane Is
+Clerk owns Control Plane authentication.
 
-| Control Plane is | Control Plane is not |
-|------------------|----------------------|
-| Clerk-authenticated operator console | Runtime hot-path enforcement |
-| Project, key, policy, subscription, and usage UI | Full customer portal |
-| Project ownership scoped to the creating Clerk subject | Teams, orgs, roles, invites, or RBAC |
-| Shared Postgres with Runtime | Schema migration authority |
+The shipped auth experience includes:
 
-Runtime remains the migration authority. The Control Plane Prisma schema is a mirror for client generation only.
+- email and password sign-up
+- email and password sign-in
+- forgot-password and reset-password flows
+- Google sign-in when enabled
+- GitHub sign-in when enabled
+- authenticated dashboard sessions
+- logout
 
----
+Control Plane routes require a signed-in Clerk session. This operator identity is separate from both the project secret used by your backend and the API keys used by downstream callers.
 
-## Auth And Route Protection
+## Project Ownership And Selection
 
-Control Plane uses Clerk for the MVP auth layer.
+Each project is associated with the Clerk subject that creates it.
 
-Shipped auth surfaces:
+- The Projects page lists only projects owned by the signed-in user.
+- Project-scoped pages validate ownership before reading or changing data.
+- Existing unowned projects are not automatically claimed or shown.
+- The sidebar project selector updates the current page's URL-backed `projectId`.
+- A project ID from another user does not expose that project's keys, policies, subscription, or usage.
 
-- `/login` - Clerk sign-in
-- `/sign-up` - Clerk sign-up
-- Clerk-owned forgot password and reset password flow
-- Google social sign-in when configured in Clerk
-- GitHub social sign-in when configured in Clerk
-- authenticated dashboard session
-- user/profile identity through Clerk user data
-- logout through Clerk session handling
+The MVP does not include teams, organizations, memberships, roles, invites, or RBAC.
 
-Protected console routes:
+## Overview And Initial Setup
 
-- `/`
-- `/projects`
-- `/keys`
-- `/policies`
-- `/subscriptions`
-- `/usage`
+After selecting a project, Overview provides the shortest integration path:
 
-The old `CEIBA_OPERATOR_PASSWORD` gate is retired as the primary auth mechanism.
+1. Confirm the selected project and copy its project ID.
+2. Keep the one-time project secret on your API server.
+3. Configure `CEIBA_RUNTIME_URL`, `CEIBA_PROJECT_ID`, and `CEIBA_PROJECT_SECRET`.
+4. Install the Node SDK and continue to the [Quickstart](/quickstart).
 
----
-
-## Ownership Scope
-
-Projects are owned by the Clerk subject that creates them.
-
-Current behavior:
-
-- `/projects` lists only projects owned by the signed-in Clerk user.
-- `/keys`, `/policies`, `/subscriptions`, and `/usage` only read or mutate owned projects.
-- Manual `?projectId=...` deep links are validated server-side against the current Clerk subject.
-- Existing unowned projects are hidden by default and are not automatically claimed.
-
-There are no teams, orgs, roles, memberships, or RBAC in this MVP.
-
----
+If no project exists, Overview directs you to create one first.
 
 ## Projects
 
@@ -69,147 +50,119 @@ Route: `/projects`
 Operators can:
 
 - create a project
-- copy the one-time project secret from the success UI
-- edit project name and description
-- disable or enable a project
+- copy the project secret once from the creation result
+- edit the project name and description
+- disable or enable the project
 - rotate the project secret
-- open project-scoped keys, policies, subscriptions, and usage views
+- open the project's keys, policies, subscription, and usage
 
-Project create stores the current Clerk user subject as the project owner.
+Project slugs remain fixed after creation.
 
-Project secret plaintext is shown once. Use it as `x-ceiba-project-secret` when calling Runtime, or as SDK `projectSecret`. Rotation uses a fixed 24-hour overlap. See [Project secret and rotation overlap](project-secret-rotation.md).
+A disabled project is not authorized by Runtime. Re-enable it before expecting protected requests or machine-facing key operations to succeed.
 
-The project slug is not editable from the shipped Control Plane UI.
+> Project-secret plaintext appears only during project creation or rotation. Ceiba stores its hash and cannot retrieve the existing plaintext later.
 
----
+Rotation keeps the previous secret valid for a fixed 24-hour overlap. See [Project Secret Rotation](/project-secret-rotation) before rotating a credential used by more than one service or job.
 
 ## API Keys
 
 Route: `/keys`
 
-The sidebar project selector or `?projectId=...` selects the owned project.
+API keys authenticate downstream consumers calling your API. They are not project secrets.
 
 Operators can:
 
 - create an API key
-- copy the plaintext key once after create
-- view prefix, status, created time, expiry, revoke/archive times, and last-used time when available
-- set expiry on active keys
-- clear expiry on active keys
-- revoke active keys
-- archive active keys
+- copy the plaintext key once after creation
+- view its prefix, status, creation time, expiry, lifecycle timestamps, and last-used time when available
+- set or clear expiry on an active key
+- revoke an active key
+- archive an active key
 
-Plaintext key material is shown once on create. Runtime stores hashes and uses the prefix for operator visibility.
+Ceiba stores the key hash, not retrievable plaintext. Revoked, archived, and expired keys are denied by Runtime. The Control Plane does not reactivate revoked or archived keys.
 
-Revoked and archived keys are not reactivated from the shipped UI. Expired keys are denied by Runtime with `expired_api_key`.
-
-Backend-driven key lifecycle uses the same Runtime rows. See [Programmatic API keys](programmatic-api-keys.md).
-
----
+For backend-driven lifecycle management, see [Programmatic API Keys](/programmatic-api-keys).
 
 ## Access Policies
 
 Route: `/policies`
 
-Runtime evaluates active policies in priority order. The Control Plane configures those policy rows.
+Access policies describe which method and path patterns Runtime should match.
 
 Operators can:
 
-- create policies
-- set path pattern
-- set method pattern (`*` or one HTTP verb)
-- set priority
-- set active/inactive state
-- edit path, method, priority, active state, and description
-- deactivate a policy
+- create a policy
+- choose one HTTP method or `*`
+- set a path pattern
+- set an integer priority
+- add an optional description
+- activate or deactivate the policy
+- edit its method, path, priority, active state, and description
 - delete a policy
 
-Policy names are not editable in the shipped UI.
+Runtime evaluates active policies in ascending priority order, so the lowest priority number matches first. Policy names stay fixed after creation.
 
----
-
-## Subscriptions And Billing Backbone
+## Subscriptions
 
 Route: `/subscriptions`
 
-The shipped UI shows available active billing plans from the database and the current project subscription state. It does not publish public plan/pricing claims.
+The page shows the selected project's:
 
-There are three separate billing mechanisms:
+- current plan
+- subscription status
+- monthly request quota
+- per-minute rate limit
+- current billing period when available
+- renewal or period-end state when available
 
-| Mechanism | What It Does | When Subscription State Updates |
-|-----------|--------------|---------------------------------|
-| **Select plan** | Upserts the local `project_subscriptions` row for the selected `billing_plans` row. | Immediately on submit. |
-| **Stripe Checkout** | Creates a Stripe hosted Checkout Session in subscription mode when Stripe env is configured and the plan has a `stripe_price_id`. | On webhook sync, not merely on browser return. |
-| **Sync from Stripe** | Operator-triggered retrieve and apply for an existing Stripe subscription id. | On submit when a Stripe subscription id exists. |
+Use **View plans** to compare the active Free, Starter, and Pro catalog tiers. The docs do not publish prices, and the plan dialog uses the current catalog values configured for the environment.
 
-Webhook endpoint:
+### Initial Paid Subscription
 
-- `POST /api/webhooks/stripe`
+An eligible project without an existing Stripe subscription can choose **Subscribe** for a paid plan with Checkout enabled. Stripe hosts the payment flow.
 
-Handled MVP events:
+After a successful Checkout:
 
-- `checkout.session.completed`
-- `customer.subscription.created`
-- `customer.subscription.updated`
-- `customer.subscription.deleted`
+1. Stripe webhook delivery is the primary synchronization path.
+2. The authenticated Checkout return can reconcile from the Checkout Session if webhook delivery has not completed yet.
+3. The Control Plane shows the synchronized plan and subscription state.
+4. Ceiba sends its own subscription confirmation email after successful Checkout synchronization.
 
-Required env for Checkout:
+Stripe still controls its own payment and invoice behavior.
 
-- `STRIPE_SECRET_KEY`
-- `CEIBA_PUBLIC_APP_URL`
+### Current Limitation
 
-Required env for webhook verification:
+A project with an existing Stripe subscription cannot start another Checkout from the plan dialog. Paid-plan upgrade and downgrade behavior is not currently shipped, so the UI does not present a misleading change-plan action.
 
-- `STRIPE_WEBHOOK_SECRET`
-
-For local Stripe testing, use Stripe CLI forwarding to the Control Plane webhook route and put real secrets in `.env.local` or deployment env, not `.env.example`.
-
-Not shipped in this MVP: reconciliation cron, polling jobs, billing email, customer billing portal, or public pricing catalog claims.
-
----
+The customer-facing UI does not expose local plan mutation or manual Stripe reconciliation controls.
 
 ## Usage
 
 Route: `/usage`
 
-Usage is read-only in Control Plane. Runtime records usage during authorize.
+Usage is read-only in the Control Plane. The page presents:
 
-The page shows:
-
-- current UTC month totals when a rollup exists
+- current-month request total
 - allowed and denied request counts
-- quota remaining when a plan quota is present
-- recent monthly rollups
-- recent usage events
+- remaining monthly quota when the plan has a quota
+- last-updated information
+- monthly usage history
+- recent request activity
 
-There is no charting library, analytics expansion, or Control Plane usage write path in this MVP.
+The MVP does not include advanced analytics, charting, exports, or usage-based billing.
 
----
+## Credential Checklist
 
-## Choose The Right Workflow
+| Credential | Used by | Where plaintext appears |
+|------------|---------|-------------------------|
+| Clerk session | Human operator using the Control Plane | Managed by Clerk |
+| Project secret | Your backend or Node SDK calling Runtime | Once during project create or rotation |
+| API key | Downstream consumer calling your API | Once during key creation |
 
-| Goal | Start Here |
-|------|------------|
-| Protect Express/Fastify routes | [Quickstart](quickstart.md) |
-| Mint or retire keys from your backend | [Programmatic API keys](programmatic-api-keys.md) |
-| Rotate project secrets | [Project secret and rotation overlap](project-secret-rotation.md) |
-| Run proof apps | `ceiba-examples/express-proof` or `ceiba-examples/fastify-proof` |
+Keep project secrets and API keys in appropriate secret storage. Do not place either credential in source control.
 
-## MVP Limits
+## Continue
 
-Do not expect the following as shipped:
-
-- teams, orgs, roles, invites, or RBAC
-- enterprise SSO, SAML, or OIDC enterprise connections
-- custom password reset tokens or app-owned session store
-- customer self-service portal
-- pricing/plan claims that depend on future seed/backfill work
-- gateway mode, x402, MCP docs server, OAuth/JWT provider expansion
-- Runtime or SDK behavior changes from the Control Plane UI
-
-## Related
-
-- [Docs home](index.md)
-- [Quickstart](quickstart.md)
-- [Programmatic API keys](programmatic-api-keys.md)
-- [Project secret and rotation overlap](project-secret-rotation.md)
+- [Quickstart](/quickstart) for Express and Fastify request protection.
+- [Project Secret Rotation](/project-secret-rotation) before changing a deployed secret.
+- [Programmatic API Keys](/programmatic-api-keys) for machine-facing key lifecycle.

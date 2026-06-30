@@ -1,109 +1,105 @@
-# Project Secret And Rotation Overlap
+# Project Secret Rotation
 
-This guide explains how Ceiba project secrets work in the shipped MVP: what `x-ceiba-project-secret` is for, how Runtime validates current and previous secrets, and what operators and integrators should expect during rotation.
+A project secret authenticates your backend or Node SDK to Runtime. It is server-side service auth, not the downstream API key presented by a caller.
 
-For route protection, start with the [Quickstart](quickstart.md). For machine-facing key APIs that also use the project secret, see [Programmatic API keys](programmatic-api-keys.md). For operator UI steps, see the [Control Plane operator guide](control-plane-operator-guide.md).
+This guide explains one-time handling, the fixed 24-hour overlap, and what happens if you rotate again before that overlap ends.
 
----
+## Where The Secret Is Used
 
-## What The Project Secret Is
+Your backend configures:
 
-Each Ceiba project has a project secret. Control Plane shows the plaintext once when the project is created and once after each rotation. Runtime stores only a SHA-256 hash of the UTF-8 secret, not the plaintext.
+```bash
+CEIBA_RUNTIME_URL=<your-runtime-url>
+CEIBA_PROJECT_ID=<your-project-id>
+CEIBA_PROJECT_SECRET=<your-project-secret>
+```
 
-The project secret is transport auth between your backend/SDK and Runtime. It is not an end-customer API key.
-
-Runtime calls that require the project secret include:
-
-- `POST /rt/authorize`
-- `/rt/projects/{projectId}/api-keys` machine-facing key lifecycle routes
-
-Send it as:
+The SDK sends the project secret to Runtime as:
 
 ```http
 x-ceiba-project-secret: <your-project-secret>
 ```
 
-End-customer API keys are separate. Runtime validates the project first, then evaluates the presented end-customer API key and policy/subscription state.
+The header authenticates:
 
----
+- `POST /rt/authorize`
+- project-scoped programmatic API-key lifecycle routes
 
-## How Runtime Validates The Secret
+Runtime authenticates the project before evaluating a downstream API key, access policy, subscription, quota, or rate limit.
 
-Runtime compares the presented secret against:
+## One-Time Plaintext
+
+The Control Plane shows project-secret plaintext:
+
+- once after project creation
+- once after each rotation
+
+Ceiba stores hashes, not retrievable plaintext. If the current secret is lost, rotate it; it cannot be displayed again.
+
+Keep the secret in server-side environment configuration or a secret manager. Do not expose it in browser code, mobile code, logs, source control, or downstream client configuration.
+
+## Current And Previous Secrets
+
+Runtime can accept two project-secret hashes during a rotation:
 
 | Slot | Behavior |
 |------|----------|
-| `project_secret_hash` | Current secret hash. Accepted when it matches. |
-| `previous_project_secret_hash` | Previous secret hash. Accepted only while `previous_project_secret_expires_at` is still in the future. |
+| **Current** | Accepted while it matches the project's active current secret. |
+| **Previous** | Accepted only until the fixed overlap expiry. |
 
-If neither slot matches, or if the project is not active, project auth fails.
+If neither matches, project authentication fails. An inactive project also cannot authenticate successfully.
 
-For machine-facing key routes, this is a `401`. For SDK authorize calls, this is surfaced as a transport-style failure rather than an end-customer `AccessDecision` denial.
+For programmatic key routes, invalid project auth returns `401`. For SDK authorization calls, the SDK treats it as a transport failure rather than a downstream `AccessDecision` denial.
 
----
+## The 24-Hour Overlap
 
-## Rotation Window
+When an operator rotates from the Projects page:
 
-Operators rotate project secrets in Control Plane from the project actions menu.
+1. The old current secret moves into the single previous-secret slot.
+2. Its overlap expires 24 hours after rotation.
+3. A new secret becomes current.
+4. The new plaintext appears once in the rotation result.
 
-On rotation:
-
-1. The current hash moves into the previous-secret slot.
-2. `previous_project_secret_expires_at` is set to now plus 24 hours.
-3. A new plaintext secret is generated and shown once.
-4. The new secret hash becomes the current `project_secret_hash`.
-
-During the 24-hour overlap, Runtime accepts either the new current secret or the unexpired previous secret. This lets integrators roll the new value through servers, jobs, CI, and secret stores without an instant cutover.
+During those 24 hours, Runtime accepts the new current secret and the unexpired previous secret. This gives you time to update API servers, background jobs, CI systems, and secret stores without an immediate cutover.
 
 After the overlap expires, only the current secret works.
 
----
+> The overlap duration is fixed in the MVP. It cannot be extended or configured.
 
-## Second Rotation During Overlap
+## A Second Rotation During Overlap
 
-The MVP stores one previous-secret slot, not a secret history chain.
+The MVP stores one previous-secret slot, not a history of prior secrets.
 
-If an operator rotates again while the previous overlap is still active:
+If you rotate again while an overlap is active:
 
-- the old current secret becomes the new previous secret
-- the previous slot is replaced
-- any caller still using the older previous secret stops working immediately
+- the current secret moves into the previous slot
+- the existing previous slot is replaced
+- callers still using the older previous secret stop authenticating immediately
+- a new 24-hour overlap begins for the newly replaced pair
 
-Control Plane warns when overlap is active. A second rotation is still allowed for urgent cases, but it should be coordinated.
+The Control Plane warns when an overlap is already active. A second rotation is still available for urgent credential replacement, but it should be coordinated.
 
----
+## Rotation Checklist
 
-## Integrator Checklist
+1. Inventory every server, job, and CI process using `CEIBA_PROJECT_SECRET`.
+2. Rotate the secret from the Projects page.
+3. Copy the new plaintext immediately.
+4. Update every caller during the 24-hour overlap.
+5. Confirm all callers use the new value before rotating again.
+6. Remove the old value from configuration after the rollout.
 
-1. Identify every caller that uses `CEIBA_PROJECT_SECRET`, SDK `projectSecret`, or direct `x-ceiba-project-secret` headers.
-2. Rotate from Control Plane and copy the new plaintext immediately.
-3. Deploy the new secret to every caller during the 24-hour overlap.
-4. Avoid a second rotation until all callers are confirmed on the new value.
-5. After overlap, remove the old value from config and secret stores.
-
-Ceiba does not push secret updates to customer hosts. Rotation is operator-initiated; rollout is the integrator's responsibility.
-
----
+Ceiba does not push the new secret into your infrastructure. The operator initiates rotation, and the integrator owns rollout to each caller.
 
 ## Responsibilities
 
 | Role | Responsibility |
 |------|----------------|
-| **Operator** | Create projects, rotate secrets, copy one-time plaintext, and coordinate rollout. |
-| **Integrator** | Store the secret safely and pass it on Runtime/SDK calls. |
-| **Runtime** | Enforce current plus unexpired previous secret hash and never return plaintext. |
+| **Operator** | Rotate the secret, copy the one-time plaintext, and coordinate timing. |
+| **Integrator** | Store the value safely and update every backend caller. |
+| **Runtime** | Accept the current and unexpired previous hashes and never return plaintext. |
 
-## MVP Limits
+## Continue
 
-- Fixed 24-hour overlap.
-- One previous-secret slot.
-- No configurable overlap duration.
-- No automatic propagation to SDK hosts.
-- No Runtime HTTP endpoint for rotation in the MVP.
-- No rotation audit history UI.
-
-## Related
-
-- [Quickstart](quickstart.md)
-- [Programmatic API keys](programmatic-api-keys.md)
-- [Control Plane operator guide](control-plane-operator-guide.md)
+- [Quickstart](/quickstart) for Express and Fastify route protection.
+- [Programmatic API Keys](/programmatic-api-keys) for machine-facing key lifecycle.
+- [Control Plane Operator Guide](/control-plane-operator-guide) for project operations.

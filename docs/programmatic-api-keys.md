@@ -1,68 +1,66 @@
 # Programmatic API Keys
 
-This guide is the **machine-facing key lifecycle path**: your backend creates, reads, lists, expires, revokes, and archives API keys using Runtime and the same project secret used by SDK authorize.
+Use the shipped Runtime routes or `CeibaRuntimeClient` when your backend needs to create and manage downstream API keys without a human operator using the Control Plane for every change.
 
-For live request protection, start with the [Quickstart](quickstart.md). For human-operator key management, see the [Control Plane operator guide](control-plane-operator-guide.md). For project secret rotation, see [Project secret and rotation overlap](project-secret-rotation.md).
+This guide covers only the landed lifecycle: create, list, read, expiry set or clear, revoke, and archive.
 
-## When To Use This Guide
+## When To Use This Path
 
-| Path | Use This When |
-|------|---------------|
-| **Machine-facing key lifecycle** | Your backend mints or retires keys for customers through Runtime HTTP or `CeibaRuntimeClient`. |
-| **[Quickstart](quickstart.md)** | Your Express/Fastify API needs request-time protection. |
-| **[Control Plane operator guide](control-plane-operator-guide.md)** | A human operator manages keys in the console. |
-| **[Project secret and rotation overlap](project-secret-rotation.md)** | You need to rotate `x-ceiba-project-secret` safely. |
+Use programmatic key lifecycle when your own backend needs to issue or retire credentials as part of a customer, workspace, or integration workflow.
 
-Control Plane and programmatic APIs write the same `api_keys` rows for a project.
+For live request protection, start with the [Quickstart](/quickstart). For human-operated key management, use the [Control Plane Operator Guide](/control-plane-operator-guide).
 
 ## Prerequisites
 
-- A running Ceiba Runtime base URL, for example `http://localhost:3001`.
-- A project UUID.
-- A project secret shown from Control Plane project create or rotation.
-- `@ceibalabs/ceiba-sdk` installed if you use the SDK client instead of direct HTTP.
+You need:
 
-All routes below require:
+- a Runtime base URL
+- an owner-scoped project ID
+- the project secret shown once during project creation or rotation
+- `@ceibalabs/ceiba-sdk` if you use the SDK client
+
+Every machine-facing key request uses:
 
 ```http
 x-ceiba-project-secret: <your-project-secret>
 ```
 
-Use HTTPS in production. If you rotate the secret, both current and unexpired previous values work during the 24-hour overlap. See [Project secret and rotation overlap](project-secret-rotation.md).
+Use HTTPS in production and keep the project secret on your backend. During a rotation, Runtime accepts the current secret and the single unexpired previous secret for 24 hours. See [Project Secret Rotation](/project-secret-rotation).
 
-## Mental Model
+## Credential Behavior
 
-| Layer | Role |
-|-------|------|
-| **Runtime** | Owns `api_keys` rows, hashes, and lifecycle mutations. |
-| **SDK** | Thin HTTP client using `runtimeBaseUrl`, `projectId`, and `projectSecret`. |
-| **Your backend** | Stores the project secret safely and calls Runtime when you mint or retire customer keys. |
+- Create returns the full API-key plaintext once.
+- Read and list never return plaintext or key hashes.
+- Ceiba stores the key hash and a display-safe prefix.
+- Expiry can be set or cleared only while the key is active.
+- Revoked and archived keys remain unusable.
+- Lifecycle calls are scoped to the configured project.
 
-Runtime never returns key hashes or plaintext on read/list. Plaintext is returned once from create. Store or display it immediately if your product needs to show it to an end user.
+Store or deliver newly created plaintext immediately. It cannot be retrieved later.
 
-## HTTP Reference
+## HTTP Routes
 
 Replace `{runtimeBaseUrl}`, `{projectId}`, and `{apiKeyId}`.
 
-| Method | Path | Body | Success |
-|--------|------|------|---------|
-| `GET` | `/rt/projects/{projectId}/api-keys` | - | `{ "apiKeys": [ ... ] }` newest first |
-| `GET` | `/rt/projects/{projectId}/api-keys/{apiKeyId}` | - | One key object |
-| `POST` | `/rt/projects/{projectId}/api-keys` | `{ "displayName": string }` | `{ apiKeyId, displayName, keyPrefix, plaintextKey }` |
-| `PATCH` | `/rt/projects/{projectId}/api-keys/{apiKeyId}` | `{ "expiresAt": <ISO string> or null }` | Updated key |
-| `POST` | `/rt/projects/{projectId}/api-keys/{apiKeyId}/revoke` | - | `{ apiKeyId, status: "revoked" }` |
-| `POST` | `/rt/projects/{projectId}/api-keys/{apiKeyId}/archive` | - | `{ apiKeyId, status: "archived" }` |
+| Method | Path | Body | Result |
+|--------|------|------|--------|
+| `GET` | `/rt/projects/{projectId}/api-keys` | None | Keys for the project, newest first |
+| `GET` | `/rt/projects/{projectId}/api-keys/{apiKeyId}` | None | One key without secret material |
+| `POST` | `/rt/projects/{projectId}/api-keys` | `{ "displayName": string }` | ID, display name, prefix, and one-time plaintext |
+| `PATCH` | `/rt/projects/{projectId}/api-keys/{apiKeyId}` | `{ "expiresAt": <ISO string> or null }` | Updated active key |
+| `POST` | `/rt/projects/{projectId}/api-keys/{apiKeyId}/revoke` | None | Revoked lifecycle result |
+| `POST` | `/rt/projects/{projectId}/api-keys/{apiKeyId}/archive` | None | Archived lifecycle result |
 
-Path parameters must be UUIDs. JSON bodies use `Content-Type: application/json`.
+Path parameters are UUIDs. Requests with a JSON body use `Content-Type: application/json`.
 
 ### Read Shape
 
-List/get/PATCH responses include:
+List, read, and expiry responses include:
 
 - `apiKeyId`
 - `displayName`
 - `keyPrefix`
-- `status` (`active`, `revoked`, or `archived`)
+- `status`
 - `createdAt`
 - `expiresAt`
 - `revokedAt`
@@ -71,44 +69,54 @@ List/get/PATCH responses include:
 
 Timestamp fields are ISO 8601 strings when present.
 
-### Common HTTP Errors
+### Transport Errors
 
-These are transport errors, not `AccessDecision` denials:
+| Status | Typical cause |
+|-------:|---------------|
+| `400` | Invalid UUID, malformed JSON, or invalid expiry value |
+| `401` | Missing or invalid project secret |
+| `404` | Key not found for the project |
+| `409` | Lifecycle conflict, such as changing expiry on a non-active key |
+| `503` | Runtime or its database is unavailable |
 
-| Code | Typical Cause |
-|------|---------------|
-| `400` | Invalid UUID path segment or malformed JSON body. |
-| `401` | Missing or invalid project secret. |
-| `404` | Key not found for that project. |
-| `409` | Conflicting state, such as expiry update on a non-active key. |
-| `503` | Runtime or database unavailable. |
+SDK users receive `CeibaRuntimeTransportError` with the Runtime `status` and response `body`.
 
-SDK users receive `CeibaRuntimeTransportError` with `status` and `body` for non-2xx responses.
+## SDK Client
 
-## SDK Reference
-
-Configure the client as in the [Quickstart](quickstart.md), then:
+Configure `CeibaRuntimeClient` with the same three server-side values used by the [Quickstart](/quickstart):
 
 ```ts
-const client = new CeibaRuntimeClient(config);
+import {
+  CeibaRuntimeClient,
+  parseCeibaSdkConfig,
+} from "@ceibalabs/ceiba-sdk";
 
-// Read
+const config = parseCeibaSdkConfig({
+  runtimeBaseUrl: process.env.CEIBA_RUNTIME_URL!,
+  projectId: process.env.CEIBA_PROJECT_ID!,
+  projectSecret: process.env.CEIBA_PROJECT_SECRET!,
+});
+
+const client = new CeibaRuntimeClient(config);
+```
+
+Then use the landed lifecycle methods:
+
+```ts
 const { apiKeys } = await client.listApiKeys();
 const key = await client.getApiKey(apiKeyId);
 
-// Create: plaintextKey is returned once
 const created = await client.createApiKey("Production CI");
+console.log(created.plaintextKey); // returned once
 
-// Expiry: ISO string or null to clear; active keys only
-const updated = await client.setApiKeyExpiry(
-  apiKeyId,
+await client.setApiKeyExpiry(
+  created.apiKeyId,
   "2030-01-01T00:00:00.000Z",
 );
-await client.setApiKeyExpiry(apiKeyId, null);
+await client.setApiKeyExpiry(created.apiKeyId, null);
 
-// Revoke / archive
-await client.revokeApiKey(apiKeyId);
-await client.archiveApiKey(apiKeyId);
+await client.revokeApiKey(created.apiKeyId);
+await client.archiveApiKey(anotherActiveApiKeyId);
 ```
 
 Useful exported types:
@@ -118,37 +126,32 @@ Useful exported types:
 - `ApiKeyCreateResult`
 - `ApiKeyLifecycleResult`
 
-For transport HTTP mapping from any Runtime call, use `httpStatusForRuntimeTransport`. See [Quickstart - Current transport behavior](quickstart.md#current-transport-behavior).
+These methods are a thin client for Runtime. They do not move key lifecycle or authorization rules into the SDK.
 
-## Demo Script
+## Runnable Lifecycle Example
 
-`ceiba-examples/express-proof/scripts/programmatic-keys.mjs` runs:
+The shipped [programmatic key lifecycle script](https://github.com/CeibaLabs/ceiba-examples/blob/dev/express-proof/scripts/programmatic-keys.mjs) performs:
 
 1. list keys
-2. create a revoke-path key
-3. read it
-4. set and clear expiry
-5. revoke it
-6. create a second archive-path key
-7. archive it
-8. list keys again
+2. create and read a disposable key
+3. set and clear its expiry
+4. revoke it
+5. create and read a second disposable key
+6. archive it
+7. list keys again
 
-Run from `ceiba-examples/express-proof/`:
+Run it from the Express proof:
 
 ```bash
+cd express-proof
+npm install
 npm run demo:programmatic-keys
 ```
 
-## What This Guide Does Not Cover
+The script creates real rows for the configured project. Use a test project unless you intentionally want those lifecycle records.
 
-- Control Plane UI flows. See [Control Plane operator guide](control-plane-operator-guide.md).
-- Authorize request behavior, policies, quotas, or subscriptions. See [Quickstart](quickstart.md).
-- Project secret rotation overlap. See [Project secret and rotation overlap](project-secret-rotation.md).
-- Local Runtime bootstrap or database migrations.
+## Continue
 
-## Related
-
-- [Docs home](index.md)
-- [Quickstart](quickstart.md)
-- [Control Plane operator guide](control-plane-operator-guide.md)
-- [Project secret and rotation overlap](project-secret-rotation.md)
+- [Quickstart](/quickstart) for request-time protection.
+- [Control Plane Operator Guide](/control-plane-operator-guide) for operator-managed keys.
+- [Project Secret Rotation](/project-secret-rotation) for rotation rollout.

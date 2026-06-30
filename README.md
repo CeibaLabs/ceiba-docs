@@ -1,83 +1,74 @@
 # Ceiba Docs
 
-Source content for **docs.useceiba.com**.
+Deployable source for [docs.useceiba.com](https://docs.useceiba.com).
 
-Ceiba helps teams add API keys, policies, quotas, usage tracking, and subscription-gated access to an existing Node API without adopting a full gateway.
+Ceiba helps teams productize an existing Node API with API keys, policies, plans, quotas, usage tracking, and subscription-gated access without adopting a full gateway.
 
-The docs describe shipped MVP behavior only: Runtime enforcement, the Node SDK integration path, Control Plane operator workflows, project secret rotation, machine-facing key lifecycle, billing checkout/webhook/reconciliation backbone, and the shipped Express/Fastify examples.
+## Stack
 
----
+- Next.js App Router
+- React and TypeScript
+- Tailwind CSS v4
+- one constrained Radix/shadcn-style Sheet primitive
+- Lucide icons
+- local Markdown content rendered at build time
+- Ceiba-owned colors, logo, and locally bundled typography
 
-## Start Here
+## Local Development
 
-| I want to... | Read |
-|--------------|------|
-| See the docs-site entry point | [Docs home](docs/index.md) |
-| Protect an Express or Fastify route | [Quickstart](docs/quickstart.md) |
-| Create, list, expire, revoke, or archive keys from my backend | [Programmatic API keys](docs/programmatic-api-keys.md) |
-| Operate projects, keys, policies, subscriptions, and usage in the console | [Control Plane operator guide](docs/control-plane-operator-guide.md) |
-| Understand project secrets and rotation overlap | [Project secret and rotation overlap](docs/project-secret-rotation.md) |
+```bash
+npm install
+npm run dev
+```
 
----
+The dev server uses `PORT` when set and otherwise starts on `3000`.
 
-## Documentation Map
+Required checks:
 
-### Getting Started
+```bash
+npm run typecheck
+npm run lint
+npm run build
+```
 
-- **[Docs home](docs/index.md)** - release-ready information architecture for the public docs site.
-- **[Quickstart](docs/quickstart.md)** - SDK config, Express/Fastify protection, Runtime authorize denials, and transport behavior.
+## Public Routes
 
-### Machine-Facing Workflows
+| Route | Source |
+|-------|--------|
+| `/` | [`docs/index.md`](docs/index.md) |
+| `/quickstart` | [`docs/quickstart.md`](docs/quickstart.md) |
+| `/control-plane-operator-guide` | [`docs/control-plane-operator-guide.md`](docs/control-plane-operator-guide.md) |
+| `/programmatic-api-keys` | [`docs/programmatic-api-keys.md`](docs/programmatic-api-keys.md) |
+| `/project-secret-rotation` | [`docs/project-secret-rotation.md`](docs/project-secret-rotation.md) |
 
-- **[Programmatic API keys](docs/programmatic-api-keys.md)** - Runtime key lifecycle routes and `CeibaRuntimeClient` methods that use `x-ceiba-project-secret`.
-- **[Project secret and rotation overlap](docs/project-secret-rotation.md)** - current vs previous secret behavior, the fixed 24-hour overlap, and what happens on a second rotation.
+The local registry in `src/lib/docs-navigation.ts` owns route order, navigation grouping, descriptions, and previous/next links. Markdown remains the article source.
 
-### Operator Workflows
+## Documentation Scope
 
-- **[Control Plane operator guide](docs/control-plane-operator-guide.md)** - Clerk-authenticated operator setup for projects, secrets, API keys, policies, subscriptions, usage, and billing reconciliation.
+The site documents shipped MVP behavior:
 
-### Runnable Proofs
+- Runtime-backed access enforcement
+- thin Node SDK integration
+- Express and Fastify adapters
+- Clerk-authenticated, owner-scoped Control Plane workflows
+- one-time project secrets and API keys
+- fixed 24-hour project-secret rotation overlap
+- programmatic API-key lifecycle
+- Free, Starter, and Pro catalog tiers
+- eligible initial paid subscription Checkout
+- subscription synchronization and Ceiba confirmation email
+- usage and quota visibility
 
-Proof apps live in `ceiba-examples`, not this repo:
+It intentionally excludes gateway mode, x402, MCP docs server, OAuth/JWT provider expansion, organizations/RBAC, enterprise SSO, customer portal, usage-based billing, advanced analytics, and multi-language SDK claims.
 
-- `express-proof/` - Express route protected with `ceibaExpressMiddleware`.
-- `fastify-proof/` - Fastify route protected with `ceibaFastifyPreHandler`.
-- `express-proof/scripts/programmatic-keys.mjs` - SDK key lifecycle demo.
+## Verified Public Repositories
 
----
-
-## Architecture In One Pass
-
-| Layer | Responsibility |
-|-------|----------------|
-| **Runtime** | Enforces request-time access, validates project secrets and API keys, applies policies, checks subscriptions/limits, records usage, and owns migrations. |
-| **SDK** | Thin Node adapter for Express/Fastify plus Runtime client methods. It does not own enforcement logic. |
-| **Control Plane** | Clerk-authenticated operator console for configuring projects, keys, policies, subscriptions, and usage views. |
-| **Core Domain** | Shared package, not a service. |
-
----
-
-## Scope Guardrails
-
-The public docs intentionally avoid unshipped or unapproved surfaces:
-
-- no gateway mode
-- no x402
-- no MCP docs server
-- no OAuth/JWT provider expansion
-- no enterprise SSO/SAML/OIDC claims
-- no teams, orgs, roles, RBAC, invites, or customer portal claims
-- no pricing or plan values that depend on unapproved billing seed/backfill work
-
-## Related Repos
-
-| Repo | Role |
-|------|------|
-| `ceiba-runtime` | Enforcement service and schema migration authority |
-| `ceiba-sdk-node` | `@ceibalabs/ceiba-sdk` |
-| `ceiba-control-plane` | Operator console |
-| `ceiba-examples` | Express/Fastify proofs and programmatic key demo |
+- [Node SDK](https://github.com/CeibaLabs/ceiba-sdk)
+- [Examples](https://github.com/CeibaLabs/ceiba-examples)
+- [Express proof](https://github.com/CeibaLabs/ceiba-examples/tree/dev/express-proof)
+- [Fastify proof](https://github.com/CeibaLabs/ceiba-examples/tree/dev/fastify-proof)
+- [Programmatic key lifecycle script](https://github.com/CeibaLabs/ceiba-examples/blob/dev/express-proof/scripts/programmatic-keys.mjs)
 
 ## License
 
-This repository contains documentation content for Ceiba. License choice may vary depending on whether docs content should be reusable or proprietary.
+MIT

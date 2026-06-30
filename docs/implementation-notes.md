@@ -34,6 +34,17 @@
 - Used parked **`feat/docs-mvp-expansion`** at **`3848428`** as reference input only; content was adapted to current Clerk auth and owner-scoped project behavior rather than merged wholesale.
 - Out of scope: docs app generator, examples refresh, product code, schema/migrations, Stripe configuration, billing seed/backfill, gateway/x402/MCP/OAuth/JWT provider expansion, orgs/roles/RBAC, or public pricing/plan claims.
 
-## Next
+## 2026-06-30 — Deployable release docs (`feat/docs-release-navigation-content`)
 
-- Review/merge the docs-site UI branch, then return to an explicit approval gate before examples refresh, billing plan-catalog seed/backfill, or live-stack smoke.
+- **Application scaffold:** converted the Markdown-only repo into a statically rendered Next.js App Router application with React, TypeScript, Tailwind CSS v4, Lucide icons, one constrained Radix/shadcn-style Sheet primitive, local Ceiba fonts, and the existing Markdown files as article sources.
+- **Routes:** added `/`, `/quickstart`, `/control-plane-operator-guide`, `/programmatic-api-keys`, and `/project-secret-rotation` through a small local content registry and static generation. Added a real not-found page, canonical metadata, favicon metadata, robots, and sitemap.
+- **Navigation:** added a restrained header, grouped desktop sidebar, active-page state, accessible mobile navigation with focus trapping/Escape/focus return through Radix Dialog, and previous/next article links.
+- **Article rendering:** added GFM tables, heading ids and anchor controls, styled links/lists/blockquotes/inline code, keyboard-focusable code/table overflow containers, and responsive typography without a page-level overflow path.
+- **Content reconciliation:** updated Clerk and owner-scoped Control Plane behavior, URL-backed project selection, Overview onboarding, one-time credential handling, current project/key/policy/usage workflows, Free/Starter/Pro catalog truth, initial-subscription-only Checkout, duplicate-Checkout prevention, paid-plan change limitation, webhook/return synchronization, and Ceiba confirmation email.
+- **SDK/examples truth:** preserved Runtime-owned enforcement, thin SDK behavior, exact Express/Fastify adapter names, required `CEIBA_*` configuration, denial/transport mappings, fixed project-secret overlap, and the landed programmatic key lifecycle only.
+- **Verified links:** local Git origins and repository paths were checked, and public GitHub URLs for the SDK, examples repo, Express proof, Fastify proof, and programmatic key script returned `200`.
+- **Dependency hygiene:** pinned patched Next.js `15.5.19`, added a narrow PostCSS override for the nested Next.js dependency, and confirmed `npm audit --omit=dev` reports zero vulnerabilities.
+- **Local route smoke:** all five docs routes, `robots.txt`, and `sitemap.xml` return `200`; an unknown docs route returns `404`. Rendered HTML includes active-page state, the mobile navigation trigger, anchored headings, internal links, and focusable table/code overflow containers.
+- **Browser limitation:** the in-app browser connection failed before opening a tab because required sandbox metadata was unavailable. Desktop/mobile visual navigation, Sheet focus behavior, and console inspection remain operator-pending.
+- **Deployment note:** `app.useceiba.com` and `docs.useceiba.com` did not resolve from public DNS during verification. The approved canonical URLs remain in the site; deployment/DNS work is intentionally outside this repo slice.
+- **Out of scope:** no Runtime, SDK, Control Plane, examples, landing-site, schema, deployment/IaC, DNS, search, versioning, CMS, analytics, auth, API playground, generated reference, or post-MVP product work was included.
