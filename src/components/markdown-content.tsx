@@ -1,8 +1,21 @@
 import { ExternalLink, Link as LinkIcon } from "lucide-react";
 import type { ComponentPropsWithoutRef, ElementType } from "react";
-import ReactMarkdown, { type Components } from "react-markdown";
+import { MarkdownAsync, type Components } from "react-markdown";
+import rehypePrettyCode, {
+  type Options as PrettyCodeOptions,
+} from "rehype-pretty-code";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
+
+const prettyCodeOptions: PrettyCodeOptions = {
+  theme: "github-dark-default",
+  keepBackground: false,
+  bypassInlineCode: true,
+  defaultLang: {
+    block: "plaintext",
+    inline: "",
+  },
+};
 
 function Heading({
   as: Tag,
@@ -79,16 +92,19 @@ const components: Components = {
   },
 };
 
-export function MarkdownContent({ children }: { children: string }) {
+export async function MarkdownContent({ children }: { children: string }) {
   return (
     <div className="docs-prose">
-      <ReactMarkdown
+      <MarkdownAsync
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeSlug]}
+        rehypePlugins={[
+          [rehypePrettyCode, prettyCodeOptions],
+          rehypeSlug,
+        ]}
         components={components}
       >
         {children}
-      </ReactMarkdown>
+      </MarkdownAsync>
     </div>
   );
 }

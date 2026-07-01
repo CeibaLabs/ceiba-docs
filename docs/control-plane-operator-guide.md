@@ -6,42 +6,30 @@ Use the Ceiba Control Plane to configure projects, downstream API keys, access p
 
 ## Sign In And Create An Account
 
-Clerk owns Control Plane authentication.
-
-The shipped auth experience includes:
-
-- email and password sign-up
-- email and password sign-in
-- forgot-password and reset-password flows
-- Google sign-in when enabled
-- GitHub sign-in when enabled
-- authenticated dashboard sessions
-- logout
-
-Control Plane routes require a signed-in Clerk session. This operator identity is separate from both the project secret used by your backend and the API keys used by downstream callers.
+Control Plane routes require a signed-in session. This operator identity is separate from both the project secret used by your backend and the API keys used by downstream callers.
 
 ## Project Ownership And Selection
 
-Each project is associated with the Clerk subject that creates it.
+Each project is associated with the authenticated user creating it.
 
 - The Projects page lists only projects owned by the signed-in user.
 - Project-scoped pages validate ownership before reading or changing data.
 - Existing unowned projects are not automatically claimed or shown.
 - The sidebar project selector updates the current page's URL-backed `projectId`.
-- A project ID from another user does not expose that project's keys, policies, subscription, or usage.
+- A `project ID` from another user does not expose that project's keys, policies, subscription, or usage.
 
-The MVP does not include teams, organizations, memberships, roles, invites, or RBAC.
+Currently Ceiba (MVP) does not include teams, organizations, memberships, roles, invites, or RBAC.
 
 ## Overview And Initial Setup
 
 After selecting a project, Overview provides the shortest integration path:
 
-1. Confirm the selected project and copy its project ID.
+1. Confirm the selected project and copy its **project ID**.
 2. Keep the one-time project secret on your API server.
 3. Configure `CEIBA_RUNTIME_URL`, `CEIBA_PROJECT_ID`, and `CEIBA_PROJECT_SECRET`.
 4. Install the Node SDK and continue to the [Quickstart](/quickstart).
 
-If no project exists, Overview directs you to create one first.
+If no project exists, **Overview** directs you to create one first.
 
 ## Projects
 
@@ -132,9 +120,9 @@ Stripe still controls its own payment and invoice behavior.
 
 ### Current Limitation
 
-A project with an existing Stripe subscription cannot start another Checkout from the plan dialog. Paid-plan upgrade and downgrade behavior is not currently shipped, so the UI does not present a misleading change-plan action.
+A project with an existing Stripe subscription cannot start another Checkout from the plan dialog. Paid-plan upgrade and downgrade behavior is not currently shipped, so the UI does not present a change-plan action.
 
-The customer-facing UI does not expose local plan mutation or manual Stripe reconciliation controls.
+The customer-facing UI does not expose local plan mutation or manual Stripe reconciliation controls yet.
 
 ## Usage
 
@@ -155,7 +143,7 @@ The MVP does not include advanced analytics, charting, exports, or usage-based b
 
 | Credential | Used by | Where plaintext appears |
 |------------|---------|-------------------------|
-| Clerk session | Human operator using the Control Plane | Managed by Clerk |
+| Signed-in session | Human operator using the Control Plane | Established during sign-in |
 | Project secret | Your backend or Node SDK calling Runtime | Once during project create or rotation |
 | API key | Downstream consumer calling your API | Once during key creation |
 

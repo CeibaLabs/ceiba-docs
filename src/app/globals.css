@@ -124,8 +124,9 @@ button {
   align-items: center;
   gap: 0.45rem;
   margin: 3rem 0 1rem;
-  padding-top: 0.25rem;
+  padding-top: 2rem;
   font-size: 1.45rem;
+  border-top: 1px solid var(--border);
 }
 
 .docs-prose h3 {
@@ -209,6 +210,35 @@ button {
   padding-left: 1.4rem;
 }
 
+.docs-prose ul {
+  list-style-type: disc;
+}
+
+.docs-prose ol {
+  list-style-type: decimal;
+}
+
+.docs-prose ul ul {
+  list-style-type: circle;
+}
+
+.docs-prose ul ul ul {
+  list-style-type: square;
+}
+
+.docs-prose ol ol {
+  list-style-type: lower-alpha;
+}
+
+.docs-prose ol ol ol {
+  list-style-type: lower-roman;
+}
+
+.docs-prose li > :is(ul, ol) {
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
 .docs-prose li {
   margin: 0.4rem 0;
   padding-left: 0.25rem;
@@ -270,6 +300,28 @@ button {
   line-height: 1.65;
   overscroll-behavior-x: contain;
   tab-size: 2;
+}
+
+.docs-prose figure[data-rehype-pretty-code-figure] {
+  width: 100%;
+  max-width: 100%;
+  margin: 1.35rem 0;
+}
+
+.docs-prose figure[data-rehype-pretty-code-figure] pre {
+  margin: 0;
+  padding: 1rem 0;
+}
+
+.docs-prose figure[data-rehype-pretty-code-figure] code {
+  display: grid;
+  min-width: max-content;
+  padding: 0;
+}
+
+.docs-prose figure[data-rehype-pretty-code-figure] [data-line] {
+  min-height: 1.65em;
+  padding: 0 1.1rem;
 }
 
 .docs-prose pre:focus-visible,

@@ -48,3 +48,14 @@
 - **Browser limitation:** the in-app browser connection failed before opening a tab because required sandbox metadata was unavailable. Desktop/mobile visual navigation, Sheet focus behavior, and console inspection remain operator-pending.
 - **Deployment note:** `app.useceiba.com` and `docs.useceiba.com` did not resolve from public DNS during verification. The approved canonical URLs remain in the site; deployment/DNS work is intentionally outside this repo slice.
 - **Out of scope:** no Runtime, SDK, Control Plane, examples, landing-site, schema, deployment/IaC, DNS, search, versioning, CMS, analytics, auth, API playground, generated reference, or post-MVP product work was included.
+
+## 2026-06-30 — Public copy and rendering closeout
+
+- Preserved the Founder-authored home and Operator Guide edits, including the concise provider-neutral sign-in credential boundary.
+- Removed authentication-provider naming from release-facing README and article content; historical implementation notes remain unchanged.
+- Restored visible ordered, unordered, and nested list markers through shared `.docs-prose` styles.
+- Added restrained shared separators before major article sections without changing heading anchors or Markdown structure.
+- Added server-rendered fenced-code highlighting with `rehype-pretty-code` and `shiki` using a restrained dark theme, language metadata, plaintext fallback, unchanged inline-code styling, and the existing focusable horizontal containment.
+- Clean-install verification passed with `npm ci`, typecheck, lint, production build, and a production dependency audit reporting zero vulnerabilities.
+- Local HTTP and rendered-HTML checks passed for all five public routes, list output, section styles, highlighted language/token output, focusable code blocks, contained tables, provider-neutral copy, internal links, and unknown-route `404` behavior.
+- The in-app browser could not initialize because required sandbox metadata was unavailable. Desktop/mobile visual navigation, Sheet focus behavior, and browser console/hydration inspection remain operator-pending.

@@ -2,7 +2,7 @@
 
 Ceiba helps teams productize an existing Node API with API keys, policies, plans, quotas, usage tracking, and subscription-gated access without adopting a full gateway.
 
-These guides cover the shipped MVP: connect an Express or Fastify API, configure access in the Control Plane, and manage credentials safely from either the console or your backend.
+These guides cover the shipped Ceiba MVP runtime and SDK versions, allowing you to connect an Express or Fastify API, configure access in the Control Plane, and manage credentials safely from either the console or programmatically from your backend.
 
 ## Choose Your Path
 
@@ -17,7 +17,7 @@ These guides cover the shipped MVP: connect an Express or Fastify API, configure
 
 | Surface | Responsibility |
 |---------|----------------|
-| **Control Plane** | Clerk-authenticated console for owner-scoped projects, API keys, access policies, subscriptions, and usage. |
+| **Control Plane** | Signed-in console for owner-scoped projects, API keys, access policies, subscriptions, and usage. |
 | **Runtime** | Makes request-time access decisions, enforces project and credential state, applies policies and limits, and records usage. |
 | **Node SDK** | Thin Express and Fastify integration that calls Runtime and attaches normalized access context after an allow decision. |
 | **Core Domain** | Shared internal contract package. It is not a running service. |
@@ -32,7 +32,7 @@ Configure three server-side values, install `@ceibalabs/ceiba-sdk`, and add the 
 
 ### Operator Setup
 
-Sign in through Clerk, create an owned project, copy its one-time project secret, create downstream API keys, define access policies, review the current plan, and inspect monthly usage and recent activity.
+Sign in and create an owned project, copy its one-time project secret, create downstream API keys, define access policies, review the current plan, and inspect monthly usage and recent activity.
 
 ### Credentials
 

@@ -50,7 +50,7 @@ The site documents shipped MVP behavior:
 - Runtime-backed access enforcement
 - thin Node SDK integration
 - Express and Fastify adapters
-- Clerk-authenticated, owner-scoped Control Plane workflows
+- authenticated, owner-scoped Control Plane workflows
 - one-time project secrets and API keys
 - fixed 24-hour project-secret rotation overlap
 - programmatic API-key lifecycle
