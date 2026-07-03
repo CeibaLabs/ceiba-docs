@@ -1,5 +1,11 @@
 # ceiba-docs — implementation notes
 
+## 2026-07-03 — Programmatic lifecycle request clarification
+
+- Updated the revoke/archive HTTP table to show the explicit `{}` JSON payload sent by the corrected Node SDK.
+- Clarified that direct HTTP callers using `Content-Type: application/json` must send that empty object; SDK users do not manage it themselves.
+- No new lifecycle capability or Runtime behavior is documented.
+
 ## 2026-05-09 — Quickstart (docs-only)
 
 - Added `docs/quickstart.md` as a public-facing quickstart for the real **Runtime + `@ceibalabs/ceiba-sdk`** integration shape.

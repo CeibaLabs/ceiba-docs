@@ -48,10 +48,11 @@ Replace `{runtimeBaseUrl}`, `{projectId}`, and `{apiKeyId}`.
 | `GET` | `/rt/projects/{projectId}/api-keys/{apiKeyId}` | None | One key without secret material |
 | `POST` | `/rt/projects/{projectId}/api-keys` | `{ "displayName": string }` | ID, display name, prefix, and one-time plaintext |
 | `PATCH` | `/rt/projects/{projectId}/api-keys/{apiKeyId}` | `{ "expiresAt": <ISO string> or null }` | Updated active key |
-| `POST` | `/rt/projects/{projectId}/api-keys/{apiKeyId}/revoke` | None | Revoked lifecycle result |
-| `POST` | `/rt/projects/{projectId}/api-keys/{apiKeyId}/archive` | None | Archived lifecycle result |
+| `POST` | `/rt/projects/{projectId}/api-keys/{apiKeyId}/revoke` | `{}` | Revoked lifecycle result |
+| `POST` | `/rt/projects/{projectId}/api-keys/{apiKeyId}/archive` | `{}` | Archived lifecycle result |
 
 Path parameters are UUIDs. Requests with a JSON body use `Content-Type: application/json`.
+For revoke and archive, send the explicit empty object shown above when using that content type. `CeibaRuntimeClient` supplies it automatically.
 
 ### Read Shape
 
