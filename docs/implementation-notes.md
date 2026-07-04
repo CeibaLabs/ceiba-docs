@@ -65,3 +65,10 @@
 - Clean-install verification passed with `npm ci`, typecheck, lint, production build, and a production dependency audit reporting zero vulnerabilities.
 - Local HTTP and rendered-HTML checks passed for all five public routes, list output, section styles, highlighted language/token output, focusable code blocks, contained tables, provider-neutral copy, internal links, and unknown-route `404` behavior.
 - The in-app browser could not initialize because required sandbox metadata was unavailable. Desktop/mobile visual navigation, Sheet focus behavior, and browser console/hydration inspection remain operator-pending.
+
+## 2026-07-04 — SDK adapter import alignment
+
+- Kept Runtime client/config imports on the framework-free `@ceibalabs/ceiba-sdk` root.
+- Updated only the Quickstart's executable adapter imports: Express now uses `@ceibalabs/ceiba-sdk/express` and Fastify uses `@ceibalabs/ceiba-sdk/fastify`.
+- Searched public documentation source and found no other executable root-adapter import requiring correction.
+- Clean install, typecheck, lint, production build, and rendered Quickstart entrypoint assertions passed.

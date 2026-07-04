@@ -61,9 +61,9 @@ Use `ceibaExpressMiddleware` on the route you want Runtime to evaluate:
 import express from "express";
 import {
   CeibaRuntimeClient,
-  ceibaExpressMiddleware,
   parseCeibaSdkConfig,
 } from "@ceibalabs/ceiba-sdk";
+import { ceibaExpressMiddleware } from "@ceibalabs/ceiba-sdk/express";
 
 const config = parseCeibaSdkConfig({
   runtimeBaseUrl: process.env.CEIBA_RUNTIME_URL!,
@@ -95,9 +95,9 @@ Use `ceibaFastifyPreHandler` as a route-level pre-handler:
 import Fastify from "fastify";
 import {
   CeibaRuntimeClient,
-  ceibaFastifyPreHandler,
   parseCeibaSdkConfig,
 } from "@ceibalabs/ceiba-sdk";
+import { ceibaFastifyPreHandler } from "@ceibalabs/ceiba-sdk/fastify";
 
 const config = parseCeibaSdkConfig({
   runtimeBaseUrl: process.env.CEIBA_RUNTIME_URL!,
