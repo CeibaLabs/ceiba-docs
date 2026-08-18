@@ -61,10 +61,17 @@ The site documents shipped MVP behavior:
 
 It intentionally excludes gateway mode, x402, MCP docs server, OAuth/JWT provider expansion, organizations/RBAC, enterprise SSO, customer portal, usage-based billing, advanced analytics, and multi-language SDK claims.
 
-## Verified Public Repositories
+## Ceiba ecosystem
 
-- [Node SDK](https://github.com/CeibaLabs/ceiba-sdk)
-- [Examples](https://github.com/CeibaLabs/ceiba-examples)
+- **Site** — <https://useceiba.com>
+- **Docs** — this repository, published at <https://docs.useceiba.com>
+- **Control Plane** — <https://app.useceiba.com>
+- **Node SDK** — [ceiba-sdk-node](https://github.com/CeibaLabs/ceiba-sdk-node) ([`@ceibalabs/ceiba-sdk`](https://www.npmjs.com/package/@ceibalabs/ceiba-sdk))
+- **Examples** — [ceiba-examples](https://github.com/CeibaLabs/ceiba-examples)
+- **Infrastructure** — [ceiba-infra](https://github.com/CeibaLabs/ceiba-infra)
+
+### Runnable examples
+
 - [Express proof](https://github.com/CeibaLabs/ceiba-examples/tree/dev/express-proof)
 - [Fastify proof](https://github.com/CeibaLabs/ceiba-examples/tree/dev/fastify-proof)
 - [Programmatic key lifecycle script](https://github.com/CeibaLabs/ceiba-examples/blob/dev/express-proof/scripts/programmatic-keys.mjs)
