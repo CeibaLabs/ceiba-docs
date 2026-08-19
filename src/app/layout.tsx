@@ -15,10 +15,11 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
-  icons: {
-    icon: "/ceiba-logo.png",
-    apple: "/ceiba-logo.png",
-  },
+  // Icons come from the App Router file convention (src/app/icon.svg,
+  // favicon.ico, apple-icon.png), matching the landing site and Control Plane.
+  // Declaring `icons` here would override those files, so it must stay absent.
+  // The previous value pointed at /ceiba-logo.png — a 156 KB 500x500 PNG being
+  // served as a favicon, with no light/dark variant.
   openGraph: {
     title: "Ceiba Documentation",
     description:
