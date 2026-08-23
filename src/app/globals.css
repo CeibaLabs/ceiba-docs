@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f4ee;
+  --background: #fbfbfa;
   --foreground: #1c2126;
   --card: #ffffff;
   --card-foreground: #1c2126;
-  --muted: #e9e8e2;
-  --muted-foreground: #6b7177;
-  --accent: #e4efe8;
+  --muted: #ececeb;
+  --muted-foreground: #52565b;
+  --accent: #e8efea;
   --accent-foreground: #24563f;
   --primary: #2f6b4f;
   --primary-foreground: #ffffff;
-  --border: rgba(28, 33, 38, 0.14);
+  --border: rgba(28, 33, 38, 0.1);
   --ring: #2f6b4f;
   --danger: #b42318;
   --info: #075985;
@@ -379,7 +379,7 @@ button {
 
 .docs-prose th {
   color: var(--foreground);
-  background: #efeee8;
+  background: var(--muted);
   font-weight: 600;
 }
 
@@ -414,5 +414,40 @@ button {
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+}
+
+/* —— Sidebar sub-item expand/collapse (Operator Guide sections) ——
+   Grid-rows 0fr -> 1fr instead of animating height/max-height: it doesn't
+   need the content's height measured in JS and never clips a taller-than-
+   expected panel, so there is no fragile "guess the pixel height" step. */
+
+.docs-nav-subnav {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 200ms ease;
+}
+
+.docs-nav-subnav[data-expanded="true"] {
+  grid-template-rows: 1fr;
+}
+
+.docs-nav-subnav__inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.docs-nav-toggle svg {
+  transition: transform 200ms ease;
+}
+
+.docs-nav-toggle[data-expanded="true"] svg {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-nav-subnav,
+  .docs-nav-toggle svg {
+    transition: none !important;
   }
 }

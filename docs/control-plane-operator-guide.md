@@ -103,7 +103,7 @@ The page shows the selected project's:
 - current billing period when available
 - renewal or period-end state when available
 
-Use **View plans** to compare the active Free, Starter, and Pro catalog tiers. The docs do not publish prices, and the plan dialog uses the current catalog values configured for the environment.
+Use **View plans** to compare the active Free, Starter, and Pro catalog tiers.
 
 ### Initial Paid Subscription
 

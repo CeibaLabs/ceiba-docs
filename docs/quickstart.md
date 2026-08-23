@@ -32,7 +32,7 @@ For project setup, see the [Control Plane Operator Guide](/control-plane-operato
 npm install @ceibalabs/ceiba-sdk
 ```
 
-The package source is available in the [Ceiba Node SDK repository](https://github.com/CeibaLabs/ceiba-sdk).
+The package source is available in the [Ceiba Node SDK repository](https://github.com/CeibaLabs/ceiba-sdk-node).
 
 ## Configure The Runtime Client
 

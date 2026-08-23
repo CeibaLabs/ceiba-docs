@@ -6,6 +6,11 @@ export type DocEntry = {
   shortTitle: string;
   description: string;
   group: "Getting Started" | "Control Plane" | "SDK And Runtime";
+  // Opt-in: when true, the sidebar shows this doc's real H2 headings as
+  // expandable sub-items (see docs-sections.ts). Most docs don't need this;
+  // it's a per-entry flag rather than special-casing one page by slug/href
+  // inside the navigation component itself.
+  showSectionNav?: boolean;
 };
 
 export const docs: DocEntry[] = [
@@ -38,6 +43,7 @@ export const docs: DocEntry[] = [
     description:
       "Create and operate owner-scoped projects, credentials, policies, subscriptions, and usage.",
     group: "Control Plane",
+    showSectionNav: true,
   },
   {
     slug: "project-secret-rotation",
@@ -57,6 +63,16 @@ export const docs: DocEntry[] = [
     shortTitle: "Programmatic API Keys",
     description:
       "Create, read, list, expire, revoke, and archive API keys through Runtime and the Node SDK.",
+    group: "SDK And Runtime",
+  },
+  {
+    slug: "sdks",
+    href: "/sdks",
+    sourceFile: "sdks.md",
+    title: "SDKs",
+    shortTitle: "SDKs",
+    description:
+      "The Node SDK is published today. Python and Go are on the roadmap and not yet available.",
     group: "SDK And Runtime",
   },
 ];

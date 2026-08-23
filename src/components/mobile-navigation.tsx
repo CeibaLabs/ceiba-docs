@@ -11,9 +11,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import type { DocSection } from "@/lib/docs-sections";
 import { siteLinks } from "@/lib/site-links";
 
-export function MobileNavigation() {
+export function MobileNavigation({
+  sectionsBySlug,
+}: {
+  sectionsBySlug: Record<string, DocSection[]>;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -53,6 +58,7 @@ export function MobileNavigation() {
           <DocsNavigation
             idPrefix="mobile"
             onNavigate={() => setOpen(false)}
+            sectionsBySlug={sectionsBySlug}
           />
         </div>
         <div className="absolute inset-x-0 bottom-0 border-t border-border bg-background p-3">
@@ -60,7 +66,7 @@ export function MobileNavigation() {
             href={siteLinks.app}
             className="flex min-h-10 items-center justify-between rounded-lg px-3 text-sm font-medium text-foreground no-underline hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
-            Open Control Plane
+            Login
             <ExternalLink aria-hidden="true" className="size-4" />
           </a>
         </div>

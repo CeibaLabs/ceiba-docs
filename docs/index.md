@@ -60,7 +60,7 @@ Stripe webhook delivery is the primary subscription synchronization path, with a
 - [Fastify proof](https://github.com/CeibaLabs/ceiba-examples/tree/dev/fastify-proof) uses `ceibaFastifyPreHandler`.
 - [Programmatic key lifecycle script](https://github.com/CeibaLabs/ceiba-examples/blob/dev/express-proof/scripts/programmatic-keys.mjs) covers create, read, list, expiry set/clear, revoke, and archive.
 
-The public [Node SDK repository](https://github.com/CeibaLabs/ceiba-sdk) contains the package source.
+The public [Node SDK repository](https://github.com/CeibaLabs/ceiba-sdk-node) contains the package source.
 
 ## MVP Boundaries
 
