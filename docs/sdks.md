@@ -14,17 +14,9 @@ npm install @ceibalabs/ceiba-sdk
 
 Start with the [Quickstart](/quickstart) or the [Node SDK repository](https://github.com/CeibaLabs/ceiba-sdk-node).
 
-## Upcoming
+## Upcoming SDKs
 
-The SDKs below are **not published and not usable yet**. There is no package to install and no version to pin — they are on the roadmap only. This list will update as each one actually ships.
-
-### Python
-
-Planned. Not yet started.
-
-### Go
-
-Planned. Not yet started.
+Additional SDKs are planned for the future, including a NestJS SDK extension, as well as Python and Go SDKs. We'll share further updates on programmatic API access here soon.
 
 ## Continue
 
