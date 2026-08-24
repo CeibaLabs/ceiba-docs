@@ -101,45 +101,61 @@ function DocsNavItem({
 
   return (
     <li>
-      <div className="flex items-center gap-0.5">
-        <Link
-          href={item.href}
-          aria-current={isActive ? "page" : undefined}
-          onClick={onNavigate}
-          className={cn(
-            "flex min-h-9 min-w-0 flex-1 items-center gap-2.5 rounded-md border-l-2 py-1.5 pr-3 pl-2.5 text-sm no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-            isActive
-              ? "border-primary bg-accent/60 font-medium text-foreground"
-              : "border-transparent font-normal text-muted-foreground hover:bg-muted hover:text-foreground",
-          )}
-        >
-          <Icon aria-hidden="true" className="size-4 shrink-0" />
-          <span className="truncate">{item.shortTitle}</span>
-        </Link>
+      {/*
+        One control, not two. The row used to be a Link plus a separate
+        chevron button, so the title navigated and only the small chevron
+        toggled - two hit targets doing different things in one visual row.
+        Now the whole row is a single Link that navigates *and* opens its
+        sections; the chevron is a state indicator inside it, not a control.
+        Clicking the row while already on that page toggles instead, so
+        collapsing is still possible without a second target.
+      */}
+      <Link
+        href={item.href}
+        aria-current={isActive ? "page" : undefined}
+        aria-expanded={hasSections ? expanded : undefined}
+        aria-controls={subNavId}
+        onClick={(event) => {
+          if (hasSections) {
+            // Already here: nothing to navigate to, so the click is a toggle.
+            // Otherwise always open - arriving at a page with its sections
+            // collapsed would hide the thing the click was asking for.
+            if (isActive) {
+              event.preventDefault();
+              setExpanded((value) => !value);
+            } else {
+              setExpanded(true);
+            }
+          }
+          onNavigate?.();
+        }}
+        className={cn(
+          "flex min-h-9 min-w-0 items-center gap-2.5 rounded-md border-l-2 py-1.5 pr-2 pl-2.5 text-sm no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+          isActive
+            ? "border-primary bg-accent/60 font-medium text-foreground"
+            : "border-transparent font-normal text-muted-foreground hover:bg-muted hover:text-foreground",
+        )}
+      >
+        <Icon aria-hidden="true" className="size-4 shrink-0" />
+        <span className="min-w-0 flex-1 truncate">{item.shortTitle}</span>
         {hasSections ? (
-          <button
-            type="button"
-            aria-expanded={expanded}
-            aria-controls={subNavId}
-            aria-label={`${expanded ? "Collapse" : "Expand"} ${item.shortTitle} sections`}
-            onClick={() => setExpanded((value) => !value)}
-            className="docs-nav-toggle flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          <ChevronRight
+            aria-hidden="true"
+            className="docs-nav-toggle size-4 shrink-0 opacity-70"
             data-expanded={expanded}
-          >
-            <ChevronRight aria-hidden="true" className="size-4" />
-          </button>
+          />
         ) : null}
-      </div>
+      </Link>
       {hasSections ? (
         <div className="docs-nav-subnav" data-expanded={expanded}>
           <div className="docs-nav-subnav__inner">
-            <ul id={subNavId} className="m-0 grid list-none gap-0.5 py-1 pl-8 pr-1">
+            <ul id={subNavId} className="docs-nav-tree m-0 grid list-none gap-0.5 py-1 pr-1">
               {sections.map((section) => (
-                <li key={section.id}>
+                <li key={section.id} className="docs-nav-tree__item">
                   <Link
                     href={`${item.href}#${section.id}`}
                     onClick={onNavigate}
-                    className="block rounded-md px-3 py-1.5 text-sm leading-snug text-muted-foreground no-underline hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    className="block rounded-md px-2 py-1.5 text-sm leading-snug text-muted-foreground no-underline hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
                     {section.title}
                   </Link>

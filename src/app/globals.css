@@ -417,6 +417,55 @@ button {
   }
 }
 
+/* —— Sidebar section tree (file-explorer style guide lines) ——
+   The sub-items are sections *inside* a page, so the nesting is shown the way
+   a project tree shows it: one vertical trunk with a short elbow into each
+   child. Built from pseudo-elements on the list and its items rather than
+   border tricks on the links, so the lines sit in the indent gutter and never
+   move when a label wraps to two lines.
+
+   The trunk is drawn per-item instead of once on the <ul>, because the last
+   child must stop the trunk halfway (an "L", not a "T") - that is what makes
+   it read as a tree rather than a bracket. */
+
+.docs-nav-tree {
+  --tree-indent: 1.55rem;
+  --tree-elbow: 0.55rem;
+  padding-left: var(--tree-indent);
+}
+
+.docs-nav-tree__item {
+  position: relative;
+}
+
+/* vertical trunk */
+.docs-nav-tree__item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--tree-elbow) * -1 - 0.5rem);
+  width: 1px;
+  background: var(--border);
+}
+
+/* stop the trunk at the elbow on the last child so it terminates in an L */
+.docs-nav-tree__item:last-child::before {
+  bottom: auto;
+  height: 1.0625rem;
+}
+
+/* horizontal elbow into each item */
+.docs-nav-tree__item::after {
+  content: "";
+  position: absolute;
+  top: 1.0625rem;
+  left: calc(var(--tree-elbow) * -1 - 0.5rem);
+  width: var(--tree-elbow);
+  height: 1px;
+  background: var(--border);
+}
+
 /* —— Sidebar sub-item expand/collapse (Operator Guide sections) ——
    Grid-rows 0fr -> 1fr instead of animating height/max-height: it doesn't
    need the content's height measured in JS and never clips a taller-than-
