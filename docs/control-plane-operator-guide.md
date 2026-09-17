@@ -118,11 +118,22 @@ After a successful Checkout:
 
 Stripe still controls its own payment and invoice behavior.
 
-### Current Limitation
+### Changing Plans
 
-A project with an existing Stripe subscription cannot start another Checkout from the plan dialog. Paid-plan upgrade and downgrade behavior is not currently shipped, so the UI does not present a change-plan action.
+A project with a live subscription can switch between paid plans directly from the plan dialog. This updates the existing subscription rather than starting a second Checkout, and billing is prorated for the remainder of the current period.
 
-The customer-facing UI does not expose local plan mutation or manual Stripe reconciliation controls yet.
+Switching to the plan already in effect is rejected, as is changing a plan on a project with no live subscription.
+
+### Cancelling
+
+**Cancel** schedules the subscription to end at the close of the current billing period. Access and quota continue unchanged until that date — cancelling does not cut service off immediately, and there is no separate refund step because the period already paid for is still served.
+
+A subscription that is already cancelled, or already scheduled to cancel, cannot be cancelled again.
+
+### Current Limitations
+
+- The customer-facing UI does not expose local plan mutation or manual Stripe reconciliation controls.
+- A cancellation scheduled for period end cannot be reversed from the Control Plane.
 
 ## Usage
 
