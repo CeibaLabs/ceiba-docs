@@ -54,6 +54,147 @@ Replace `{runtimeBaseUrl}`, `{projectId}`, and `{apiKeyId}`.
 Path parameters are UUIDs. Requests with a JSON body use `Content-Type: application/json`.
 For revoke and archive, send the explicit empty object shown above when using that content type. `CeibaRuntimeClient` supplies it automatically.
 
+Every route authenticates with the project secret in `x-ceiba-project-secret`, and every success
+returns `200`. Worked examples for each follow.
+
+### List Keys
+
+```http
+GET /rt/projects/{projectId}/api-keys
+x-ceiba-project-secret: {projectSecret}
+```
+
+```json
+{
+  "apiKeys": [
+    {
+      "apiKeyId": "3f1c…",
+      "displayName": "mobile-app",
+      "keyPrefix": "cbxk_Pw6jNqKM",
+      "status": "active",
+      "createdAt": "2026-09-01T10:22:31.004Z",
+      "expiresAt": null,
+      "revokedAt": null,
+      "archivedAt": null,
+      "lastUsedAt": "2026-09-17T08:14:02.771Z"
+    }
+  ]
+}
+```
+
+Newest first. Revoked and archived keys are included — filter on `status` if you only want active
+ones. `lastUsedAt` is `null` until the key authorizes its first request.
+
+### Get One Key
+
+```http
+GET /rt/projects/{projectId}/api-keys/{apiKeyId}
+x-ceiba-project-secret: {projectSecret}
+```
+
+Returns a single object in the same shape as a list entry. `404 not_found` if the key does not exist
+**or belongs to another project** — the two are deliberately indistinguishable, so this endpoint
+cannot be used to probe for key IDs.
+
+### Create A Key
+
+```http
+POST /rt/projects/{projectId}/api-keys
+x-ceiba-project-secret: {projectSecret}
+Content-Type: application/json
+
+{ "displayName": "mobile-app" }
+```
+
+```json
+{
+  "apiKeyId": "9b2e…",
+  "displayName": "mobile-app",
+  "keyPrefix": "cbxk_Pw6jNqKM",
+  "plaintextKey": "cbxk_Pw6jNqKMy5PA8qEX7ayElYUBCyRSRTzwevspXrJ-ZN0"
+}
+```
+
+> ⚠️ **`plaintextKey` is returned exactly once, here, and is never recoverable.** Only a hash is
+> stored. Hand it to its owner in this same response — a script that logs the result and moves on has
+> already lost it, and the only remedy is to create a replacement and revoke this one.
+
+`keyPrefix` is safe to store and display; it is what lets a human recognise a key later without
+holding the secret.
+
+`403 plan_limit_reached` if the project is already at its plan's active-key cap. Revoke or archive an
+existing key first, or move to a higher plan.
+
+### Set Or Clear Expiry
+
+```http
+PATCH /rt/projects/{projectId}/api-keys/{apiKeyId}
+x-ceiba-project-secret: {projectSecret}
+Content-Type: application/json
+
+{ "expiresAt": "2026-12-31T23:59:59.000Z" }
+```
+
+Send `{ "expiresAt": null }` to remove an expiry. Returns the updated key in the read shape.
+
+`409 conflict` if the key is not `active` — expiry cannot be set on a revoked or archived key.
+
+Once the timestamp passes, authorization fails with `expired_api_key`. Nothing is deleted, and the
+key still appears in a list with `status: "active"` — expiry is enforced at authorization time, not
+by a state change.
+
+### Revoke A Key
+
+```http
+POST /rt/projects/{projectId}/api-keys/{apiKeyId}/revoke
+x-ceiba-project-secret: {projectSecret}
+Content-Type: application/json
+
+{}
+```
+
+```json
+{ "apiKeyId": "9b2e…", "status": "revoked" }
+```
+
+Takes effect on the next authorization. Use this when a key may be compromised.
+
+**Idempotent** — revoking an already-revoked key returns `200` with the same body, so a retry after a
+network failure is safe. `409 conflict` only if the key is **archived**: an archived key cannot be
+revoked.
+
+### Archive A Key
+
+```http
+POST /rt/projects/{projectId}/api-keys/{apiKeyId}/archive
+x-ceiba-project-secret: {projectSecret}
+Content-Type: application/json
+
+{}
+```
+
+```json
+{ "apiKeyId": "9b2e…", "status": "archived" }
+```
+
+**Idempotent** — archiving an already-archived key returns `200`. `409 conflict` if the key is
+**revoked**: a revoked key cannot be archived.
+
+The two transitions are deliberately one-way and mutually exclusive:
+
+| From | `revoke` | `archive` |
+|---|---|---|
+| `active` | → `revoked` | → `archived` |
+| `revoked` | `200`, no change | **`409`** |
+| `archived` | **`409`** | `200`, no change |
+
+**Both stop a key working, and both free a slot against the plan's active-key cap** — that cap counts
+only keys with `status: "active"`. The difference is intent, and it is worth being consistent about
+because the status is what an audit reads later: **revoke** means this key should no longer be
+trusted; **archive** means it is simply finished with.
+
+Neither can be undone. Issue a new key instead.
+
 ### Read Shape
 
 List, read, and expiry responses include:
