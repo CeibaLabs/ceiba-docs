@@ -70,7 +70,7 @@ x-ceiba-project-secret: {projectSecret}
     {
       "apiKeyId": "3f1c…",
       "displayName": "mobile-app",
-      "keyPrefix": "cbxk_Pw6jNqKM",
+      "keyPrefix": "cbxk_EXAMPLE0",
       "status": "active",
       "createdAt": "2026-09-01T10:22:31.004Z",
       "expiresAt": null,
@@ -110,8 +110,8 @@ Content-Type: application/json
 {
   "apiKeyId": "9b2e…",
   "displayName": "mobile-app",
-  "keyPrefix": "cbxk_Pw6jNqKM",
-  "plaintextKey": "cbxk_Pw6jNqKMy5PA8qEX7ayElYUBCyRSRTzwevspXrJ-ZN0"
+  "keyPrefix": "cbxk_EXAMPLE0",
+  "plaintextKey": "cbxk_EXAMPLE0000000000000000000000000000EXAMPLE"
 }
 ```
 
