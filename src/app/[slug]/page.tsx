@@ -1,8 +1,15 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DocsArticle } from "@/components/docs-article";
+import { StructuredData } from "@/components/structured-data";
+import { docLastModified } from "@/lib/docs-freshness";
 import { getDocContent } from "@/lib/docs-content";
 import { docs, findDoc } from "@/lib/docs-navigation";
+import {
+  breadcrumbNode,
+  graph,
+  techArticleNode,
+} from "@/lib/structured-data";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -50,5 +57,25 @@ export default async function DocsPage({ params }: PageProps) {
     notFound();
   }
 
-  return <DocsArticle doc={result.doc} content={result.content} />;
+  const { doc } = result;
+
+  return (
+    <>
+      <StructuredData
+        json={graph(
+          techArticleNode({
+            title: doc.title,
+            description: doc.description,
+            href: doc.href,
+            dateModified: docLastModified(doc),
+          }),
+          breadcrumbNode([
+            { name: "Docs", href: "/" },
+            { name: doc.shortTitle, href: doc.href },
+          ]),
+        )}
+      />
+      <DocsArticle doc={doc} content={result.content} />
+    </>
+  );
 }

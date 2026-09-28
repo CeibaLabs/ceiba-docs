@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { DocsNavigation } from "@/components/docs-navigation";
+import { StructuredData } from "@/components/structured-data";
 import { SiteHeader } from "@/components/site-header";
 import { docs } from "@/lib/docs-navigation";
 import { getDocSections, type DocSection } from "@/lib/docs-sections";
 import { inter, plusJakartaSans } from "@/lib/fonts";
+import { graph, organizationNode, websiteNode } from "@/lib/structured-data";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -52,6 +54,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${plusJakartaSans.variable}`}>
       <body>
+        <StructuredData json={graph(organizationNode(), websiteNode())} />
         <SiteHeader sectionsBySlug={sectionsBySlug} />
         <div className="mx-auto grid min-h-[calc(100svh-4rem)] max-w-[90rem] grid-cols-1 md:grid-cols-[16rem_minmax(0,1fr)]">
           <aside className="hidden border-r border-border bg-background px-4 py-8 md:block">
