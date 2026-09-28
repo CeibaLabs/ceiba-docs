@@ -1,0 +1,10 @@
+export const SITE_URL = "https://docs.useceiba.com";
+export const SITE_NAME = "Ceiba Docs";
+export const MARKETING_URL = "https://www.useceiba.com";
+export const CONTROL_PLANE_URL = "https://app.useceiba.com";
+export const CONTACT_EMAIL = "contact@useceiba.com";
+export const GITHUB_ORG_URL = "https://github.com/CeibaLabs";
+export const SDK_REPO_URL = "https://github.com/CeibaLabs/ceiba-sdk-node";
+export const EXAMPLES_REPO_URL = "https://github.com/CeibaLabs/ceiba-examples";
+export const NPM_PACKAGE_URL = "https://www.npmjs.com/package/@ceibalabs/ceiba-sdk";
+export const LINKEDIN_URL = "https://www.linkedin.com/company/useceiba/";
