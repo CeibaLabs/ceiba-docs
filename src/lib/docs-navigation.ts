@@ -5,7 +5,7 @@ export type DocEntry = {
   title: string;
   shortTitle: string;
   description: string;
-  group: "Getting Started" | "Control Plane" | "SDK And Runtime";
+  group: "Getting Started" | "Guides" | "Control Plane" | "SDK And Runtime";
   // Opt-in: when true, the sidebar shows this doc's real H2 headings as
   // expandable sub-items (see docs-sections.ts). Most docs don't need this;
   // it's a per-entry flag rather than special-casing one page by slug/href
@@ -33,6 +33,39 @@ export const docs: DocEntry[] = [
     description:
       "Protect an Express or Fastify route with the Ceiba Node SDK and Runtime.",
     group: "Getting Started",
+  },
+  {
+    slug: "api-access-control-express",
+    href: "/api-access-control-express",
+    sourceFile: "api-access-control-express.md",
+    title: "API Access Control In Express",
+    shortTitle: "Access Control In Express",
+    description:
+      "Decide who may call which routes of an existing Express API, how much, and what happens when they exceed it.",
+    group: "Guides",
+    showSectionNav: true,
+  },
+  {
+    slug: "plans-quotas-rate-limits",
+    href: "/plans-quotas-rate-limits",
+    sourceFile: "plans-quotas-rate-limits.md",
+    title: "Plans, Quotas And Rate Limits",
+    shortTitle: "Plans And Quotas",
+    description:
+      "Put a ceiling on API consumption, tie it to what a customer pays for, and have it hold under concurrency.",
+    group: "Guides",
+    showSectionNav: true,
+  },
+  {
+    slug: "api-key-lifecycle",
+    href: "/api-key-lifecycle",
+    sourceFile: "api-key-lifecycle.md",
+    title: "API Key Lifecycle",
+    shortTitle: "API Key Lifecycle",
+    description:
+      "How API keys should be stored, handed over, retired, and rotated, and what to do the moment one leaks.",
+    group: "Guides",
+    showSectionNav: true,
   },
   {
     slug: "control-plane-operator-guide",
@@ -91,6 +124,10 @@ export const navigationGroups = [
   {
     label: "Getting Started",
     items: docs.filter((doc) => doc.group === "Getting Started"),
+  },
+  {
+    label: "Guides",
+    items: docs.filter((doc) => doc.group === "Guides"),
   },
   {
     label: "Control Plane",

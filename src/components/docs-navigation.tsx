@@ -7,9 +7,11 @@ import {
   FileText,
   BookOpenText,
   ChevronRight,
+  Gauge,
   KeyRound,
   LayoutGrid,
   Package,
+  ShieldCheck,
   RefreshCw,
   Rocket,
 } from "lucide-react";
@@ -25,6 +27,9 @@ const icons: Record<
 > = {
   "/": LayoutGrid,
   "/quickstart": Rocket,
+  "/api-access-control-express": ShieldCheck,
+  "/plans-quotas-rate-limits": Gauge,
+  "/api-key-lifecycle": KeyRound,
   "/control-plane-operator-guide": BookOpenText,
   "/project-secret-rotation": RefreshCw,
   "/programmatic-api-keys": KeyRound,
