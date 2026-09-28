@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Activity,
+  FileText,
   BookOpenText,
   ChevronRight,
   KeyRound,
@@ -27,6 +29,7 @@ const icons: Record<
   "/project-secret-rotation": RefreshCw,
   "/programmatic-api-keys": KeyRound,
   "/sdks": Package,
+  "/service-health": Activity,
 };
 
 export function DocsNavigation({
@@ -95,7 +98,11 @@ function DocsNavItem({
       setExpanded(true);
     }
   }, [isActive]);
-  const Icon = icons[item.href];
+  // Falls back rather than resolving to undefined. A doc added without an
+  // icon entry previously rendered <undefined /> and failed the production
+  // build with "Element type is invalid" on an unrelated page, which is a
+  // long way from "you forgot an icon".
+  const Icon = icons[item.href] ?? FileText;
   const hasSections = sections.length > 0;
   const subNavId = hasSections ? `${item.slug || "home"}-subnav` : undefined;
 

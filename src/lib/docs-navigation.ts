@@ -75,6 +75,16 @@ export const docs: DocEntry[] = [
       "The Node SDK is published today. Python and Go are on the roadmap and not yet available.",
     group: "SDK And Runtime",
   },
+  {
+    slug: "service-health",
+    href: "/service-health",
+    sourceFile: "service-health.md",
+    title: "Service Health",
+    shortTitle: "Service Health",
+    description:
+      "Public status page, liveness and readiness endpoints, and the deployed build each service reports.",
+    group: "SDK And Runtime",
+  },
 ];
 
 export const navigationGroups = [
