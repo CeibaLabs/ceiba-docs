@@ -105,7 +105,7 @@ export const docs: DocEntry[] = [
     title: "SDKs",
     shortTitle: "SDKs",
     description:
-      "The Node SDK is published today. Python and Go are on the roadmap and not yet available.",
+      "Current SDK version, supported Node, Express and Fastify ranges, and which SDKs are planned.",
     group: "SDK And Runtime",
   },
   {
